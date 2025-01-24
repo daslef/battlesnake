@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 
 import Leaderboard from './components/Leaderboard'
 import Brackets from './components/Brackets'
+import Board from './components/Board'
 
 import { teamNames } from './data'
 
@@ -39,6 +40,7 @@ function App() {
 
   return (
     <main className="app">
+      <Board />
       <Leaderboard score={sortedScore} />
       <Brackets teamNames={teamNames} setScore={setScore} sortedScore={sortedScore} />
     </main>

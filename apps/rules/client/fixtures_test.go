@@ -8,7 +8,6 @@ func exampleSnakeRequest() SnakeRequest {
 			ID: "game-id",
 			Ruleset: Ruleset{
 				Name:     "test-ruleset-name",
-				Version:  "cli",
 				Settings: ConvertRulesetSettings(exampleRulesetSettings),
 			},
 			Timeout: 33,
