@@ -1,0 +1,14 @@
+.card {
+  margin-bottom: var(--ifm-spacing-vertical);
+  outline: 1px solid var(--ifm-color-primary-lightest);
+  font-weight: bold;
+}
+
+[data-theme='dark'] .card {
+  outline: 1px solid var(--ifm-color-primary-darkest);
+}
+
+.card:hover {
+  text-decoration: none;
+  outline: 4px solid var(--ifm-color-primary);
+}

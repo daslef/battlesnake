@@ -1,0 +1,120 @@
+{
+  "game": {
+    "id": "game-id",
+    "ruleset": {
+      "name": "test-ruleset-name",
+      "settings": {
+        "foodSpawnChance": 0
+      }
+    },
+    "map": "standard",
+    "timeout": 33,
+    "source": "league"
+  },
+  "turn": 11,
+  "board": {
+    "height": 22,
+    "width": 11,
+    "snakes": [
+      {
+        "id": "snake-0",
+        "name": "snake-0-name",
+        "latency": "snake-0-latency",
+        "health": 100,
+        "body": [
+          {
+            "x": 1,
+            "y": 2
+          },
+          {
+            "x": 1,
+            "y": 3
+          },
+          {
+            "x": 1,
+            "y": 4
+          }
+        ],
+        "head": {
+          "x": 1,
+          "y": 2
+        },
+        "length": 3,
+        "shout": "snake-0-shout",
+        "customizations": {
+          "color": "#123456",
+          "head": "safe",
+          "tail": "curled"
+        }
+      },
+      {
+        "id": "snake-1",
+        "name": "snake-1-name",
+        "latency": "snake-1-latency",
+        "health": 200,
+        "body": [
+          {
+            "x": 2,
+            "y": 2
+          },
+          {
+            "x": 2,
+            "y": 3
+          },
+          {
+            "x": 2,
+            "y": 4
+          }
+        ],
+        "head": {
+          "x": 2,
+          "y": 2
+        },
+        "length": 3,
+        "shout": "snake-1-shout",
+        "customizations": {
+          "color": "#654321",
+          "head": "silly",
+          "tail": "bolt"
+        }
+      }
+    ],
+    "food": [
+      {
+        "x": 2,
+        "y": 2
+      }
+    ]
+  },
+  "you": {
+    "id": "snake-1",
+    "name": "snake-1-name",
+    "latency": "snake-1-latency",
+    "health": 200,
+    "body": [
+      {
+        "x": 2,
+        "y": 2
+      },
+      {
+        "x": 2,
+        "y": 3
+      },
+      {
+        "x": 2,
+        "y": 4
+      }
+    ],
+    "head": {
+      "x": 2,
+      "y": 2
+    },
+    "length": 3,
+    "shout": "snake-1-shout",
+    "customizations": {
+      "color": "#654321",
+      "head": "silly",
+      "tail": "bolt"
+    }
+  }
+}

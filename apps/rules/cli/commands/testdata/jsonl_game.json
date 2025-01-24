@@ -1,0 +1,12 @@
+{
+  "id": "GAME_ID",
+  "ruleset": {
+    "name": "standard",
+    "settings": {
+      "foodSpawnChance": 1
+    }
+  },
+  "map": "standard",
+  "timeout": 500,
+  "source": ""
+}

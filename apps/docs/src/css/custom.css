@@ -1,0 +1,48 @@
+:root {
+  --ifm-color-primary: #9014DB;
+  --ifm-color-primary-dark: #8313c9;
+  --ifm-color-primary-darker: #7610b6;
+  --ifm-color-primary-darkest: #580d86;
+  --ifm-color-primary-light: #9b28e2;
+  --ifm-color-primary-lighter: #9f4ed1;
+  --ifm-color-primary-lightest: #af66dd;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+
+  --ifm-navbar-height: inherit;
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+div[class^='announcementBar_'] {
+  background-color: var(--ifm-color-primary) !important;
+  font-weight: bold;
+}
+
+div[class^='announcementBar_'] .close {
+  color: inherit;
+}
+
+
+.navbar--fixed-top {
+  position: static;
+}
+
+.navbar__link {
+  text-align: center;
+}
+
+.navbar-item-icon {
+  padding: 0.25rem;
+}
+
+
+/* Markdown Content */
+.markdown h1 {
+  border-bottom: 5px solid rgb(232, 9, 135);
+  border-image: linear-gradient(135deg, rgba(232, 9, 135, 1) 0%, rgba(232, 9, 135, 1) 15%, rgba(62, 50, 143, 1) 85%, rgba(62, 50, 143, 1) 100%);
+  border-image-slice: 1;
+}
