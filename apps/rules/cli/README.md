@@ -31,8 +31,6 @@ Flags:
   -t, --timeout int               Request Timeout (default 500)
   -g, --gametype string           Type of Game Rules (default "standard")
   -m, --map string                Game map to use to populate the board (default "standard")
-  -c, --color                     Use color to draw the map
-  -r, --seed int                  Random Seed (default 1656460409268690000)
       --browser                   View the game in the browser using the Battlesnake game board
       --board-url string          Base URL for the game board when using --browser (default "https://board.battlesnake.com")
       --foodSpawnChance int       Percentage chance of spawning a new food every round (default 15)

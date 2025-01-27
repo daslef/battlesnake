@@ -86,7 +86,6 @@ func NewPlayCommand() *cobra.Command {
 	playCmd.Flags().StringArrayVarP(&gameState.URLs, "url", "u", nil, "URL of Snake")
 
 	playCmd.Flags().StringVarP(&gameState.GameType, "gametype", "g", "standard", "Type of Game Rules")
-	playCmd.Flags().Int64VarP(&gameState.Seed, "seed", "r", time.Now().UTC().UnixNano(), "Random Seed")
 	playCmd.Flags().BoolVar(&gameState.ViewInBrowser, "browser", false, "View the game in the browser using the Battlesnake game board")
 	playCmd.Flags().StringVar(&gameState.BoardURL, "board-url", "https://board.battlesnake.com", "Base URL for the game board when using --browser")
 
@@ -99,8 +98,11 @@ func NewPlayCommand() *cobra.Command {
 
 // Setup a GameState once all the fields have been parsed from the command-line.
 func (gameState *GameState) Initialize() error {
-	// Generate game ID
-	gameState.gameID = "tournament"
+	if gameState.gameID == "" {
+		gameState.gameID = "tournament"
+	}
+
+	gameState.Seed = time.Now().UTC().UnixNano()
 
 	// Set up HTTP client with request timeout
 	gameState.Timeout = 500
@@ -198,7 +200,7 @@ func (gameState *GameState) Run() error {
 			break
 		}
 
-		// 	gameState.printState(boardState)
+		gameState.printState(boardState)
 
 		if gameState.ViewInBrowser {
 			boardServer.SendEvent(gameState.buildFrameEvent(boardState))
