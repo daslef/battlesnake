@@ -13,6 +13,8 @@ import (
 	"rules"
 	"rules/board"
 	"rules/client"
+	"rules/rulesets"
+	"rules/settings"
 	"rules/test"
 
 	"github.com/stretchr/testify/require"
@@ -530,12 +532,12 @@ func TestCreateNextBoardState(t *testing.T) {
 
 type StubRuleset struct {
 	maxTurns int
-	settings rules.Settings
+	settings settings.Settings
 }
 
-func (ruleset StubRuleset) Name() string             { return "standard" }
-func (ruleset StubRuleset) Settings() rules.Settings { return ruleset.settings }
-func (ruleset StubRuleset) Execute(prevState *rules.BoardState, moves []rules.SnakeMove) (bool, *rules.BoardState, error) {
+func (ruleset StubRuleset) Name() string                { return "standard" }
+func (ruleset StubRuleset) Settings() settings.Settings { return ruleset.settings }
+func (ruleset StubRuleset) Execute(prevState *rules.BoardState, moves []rulesets.SnakeMove) (bool, *rules.BoardState, error) {
 	return prevState.Turn >= ruleset.maxTurns, prevState, nil
 }
 

@@ -2,6 +2,7 @@ package maps
 
 import (
 	"rules"
+	"rules/settings"
 )
 
 type StandardMap struct{}
@@ -19,7 +20,7 @@ func (m StandardMap) Meta() Metadata {
 	}
 }
 
-func (m StandardMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m StandardMap) SetupBoard(initialBoardState *rules.BoardState, settings settings.Settings, editor Editor) error {
 	rand := settings.GetRand(0)
 
 	if len(initialBoardState.Snakes) > int(m.Meta().MaxPlayers) {
@@ -49,11 +50,11 @@ func (m StandardMap) SetupBoard(initialBoardState *rules.BoardState, settings ru
 	return nil
 }
 
-func (m StandardMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m StandardMap) PreUpdateBoard(lastBoardState *rules.BoardState, settings settings.Settings, editor Editor) error {
 	return nil
 }
 
-func (m StandardMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m StandardMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings settings.Settings, editor Editor) error {
 	rand := settings.GetRand(lastBoardState.Turn)
 
 	foodNeeded := checkFoodNeedingPlacement(rand, settings)
@@ -64,7 +65,7 @@ func (m StandardMap) PostUpdateBoard(lastBoardState *rules.BoardState, settings 
 	return nil
 }
 
-func checkFoodNeedingPlacement(rand rules.Rand, settings rules.Settings) int {
+func checkFoodNeedingPlacement(rand rules.Rand, settings settings.Settings) int {
 	foodSpawnChance := settings.Int(rules.ParamFoodSpawnChance, 0)
 
 	if foodSpawnChance > 0 && (100-rand.Intn(100)) < foodSpawnChance {

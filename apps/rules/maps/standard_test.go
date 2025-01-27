@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"rules"
+	"rules/settings"
 	"rules/maps"
 
 	"github.com/stretchr/testify/require"
@@ -16,7 +17,7 @@ func TestStandardMapInterface(t *testing.T) {
 
 func TestStandardMapSetupBoard(t *testing.T) {
 	m := maps.StandardMap{}
-	settings := rules.Settings{}
+	settings := settings.Settings{}
 
 	tests := []struct {
 		name              string
@@ -127,7 +128,7 @@ func TestStandardMapUpdateBoard(t *testing.T) {
 	tests := []struct {
 		name              string
 		initialBoardState *rules.BoardState
-		settings          rules.Settings
+		settings          settings.Settings
 		rand              rules.Rand
 
 		expected *rules.BoardState
@@ -135,35 +136,35 @@ func TestStandardMapUpdateBoard(t *testing.T) {
 		{
 			"empty no food",
 			rules.NewBoardState(2, 2),
-			rules.NewSettingsWithParams(rules.ParamFoodSpawnChance, "0"),
+			settings.NewSettingsWithParams(rules.ParamFoodSpawnChance, "0"),
 			rules.MinRand,
 			rules.NewBoardState(2, 2),
 		},
 		{
 			"empty FoodSpawnChance inactive",
 			rules.NewBoardState(2, 2),
-			rules.NewSettingsWithParams(rules.ParamFoodSpawnChance, "50"),
+			settings.NewSettingsWithParams(rules.ParamFoodSpawnChance, "50"),
 			rules.MinRand,
 			rules.NewBoardState(2, 2),
 		},
 		{
 			"empty FoodSpawnChance active",
 			rules.NewBoardState(2, 2),
-			rules.NewSettingsWithParams(rules.ParamFoodSpawnChance, "50"),
+			settings.NewSettingsWithParams(rules.ParamFoodSpawnChance, "50"),
 			rules.MaxRand,
 			rules.NewBoardState(2, 2).WithFood([]rules.Point{{X: 0, Y: 1}}),
 		},
 		{
 			"not empty FoodSpawnChance active",
 			rules.NewBoardState(2, 2).WithFood([]rules.Point{{X: 0, Y: 0}}),
-			rules.NewSettingsWithParams(rules.ParamFoodSpawnChance, "50"),
+			settings.NewSettingsWithParams(rules.ParamFoodSpawnChance, "50"),
 			rules.MaxRand,
 			rules.NewBoardState(2, 2).WithFood([]rules.Point{{X: 0, Y: 0}, {X: 1, Y: 0}}),
 		},
 		{
 			"not empty FoodSpawnChance no room",
 			rules.NewBoardState(2, 2).WithFood([]rules.Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 1, Y: 0}, {X: 1, Y: 1}}),
-			rules.NewSettingsWithParams(rules.ParamFoodSpawnChance, "50"),
+			settings.NewSettingsWithParams(rules.ParamFoodSpawnChance, "50"),
 			rules.MaxRand,
 			rules.NewBoardState(2, 2).WithFood([]rules.Point{{X: 0, Y: 0}, {X: 0, Y: 1}, {X: 1, Y: 0}, {X: 1, Y: 1}}),
 		},

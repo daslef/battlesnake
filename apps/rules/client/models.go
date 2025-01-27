@@ -1,6 +1,9 @@
 package client
 
-import "rules"
+import (
+	"rules"
+	"rules/settings"
+)
 
 // The top-level message sent in /start, /move, and /end requests
 type SnakeRequest struct {
@@ -57,7 +60,7 @@ type RulesetSettings struct {
 }
 
 // Converts a rules.Settings (which can contain arbitrary settings) into the static RulesetSettings used in the client API.
-func ConvertRulesetSettings(settings rules.Settings) RulesetSettings {
+func ConvertRulesetSettings(settings settings.Settings) RulesetSettings {
 	return RulesetSettings{
 		FoodSpawnChance: settings.Int(rules.ParamFoodSpawnChance, 0),
 	}
@@ -77,10 +80,10 @@ type MoveResponse struct {
 
 // The expected format of the response body from a GET request to a Battlesnake's index URL
 type SnakeMetadataResponse struct {
-	Author     string `json:"author,omitempty"`
-	Color      string `json:"color,omitempty"`
-	Head       string `json:"head,omitempty"`
-	Tail       string `json:"tail,omitempty"`
+	Author string `json:"author,omitempty"`
+	Color  string `json:"color,omitempty"`
+	Head   string `json:"head,omitempty"`
+	Tail   string `json:"tail,omitempty"`
 }
 
 func CoordFromPoint(pt rules.Point) Coord {

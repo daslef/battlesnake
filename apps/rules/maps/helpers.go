@@ -2,10 +2,11 @@ package maps
 
 import (
 	"rules"
+	"rules/settings"
 )
 
 // SetupBoard is a shortcut for looking up a map by ID and initializing a new board state with it.
-func SetupBoard(mapID string, settings rules.Settings, width, height int, snakeIDs []string) (*rules.BoardState, error) {
+func SetupBoard(mapID string, settings settings.Settings, width, height int, snakeIDs []string) (*rules.BoardState, error) {
 	boardState := rules.NewBoardState(width, height)
 
 	rules.InitializeSnakes(boardState, snakeIDs)
@@ -26,7 +27,7 @@ func SetupBoard(mapID string, settings rules.Settings, width, height int, snakeI
 }
 
 // PreUpdateBoard updates a board state with a map.
-func PreUpdateBoard(gameMap GameMap, previousBoardState *rules.BoardState, settings rules.Settings) (*rules.BoardState, error) {
+func PreUpdateBoard(gameMap GameMap, previousBoardState *rules.BoardState, settings settings.Settings) (*rules.BoardState, error) {
 	nextBoardState := previousBoardState.Clone()
 	editor := NewBoardStateEditor(nextBoardState)
 
@@ -38,7 +39,7 @@ func PreUpdateBoard(gameMap GameMap, previousBoardState *rules.BoardState, setti
 	return nextBoardState, nil
 }
 
-func PostUpdateBoard(gameMap GameMap, previousBoardState *rules.BoardState, settings rules.Settings) (*rules.BoardState, error) {
+func PostUpdateBoard(gameMap GameMap, previousBoardState *rules.BoardState, settings settings.Settings) (*rules.BoardState, error) {
 	nextBoardState := previousBoardState.Clone()
 	editor := NewBoardStateEditor(nextBoardState)
 
@@ -66,7 +67,7 @@ func (StubMap) Meta() Metadata {
 	return Metadata{}
 }
 
-func (m StubMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m StubMap) SetupBoard(initialBoardState *rules.BoardState, settings settings.Settings, editor Editor) error {
 	if m.Error != nil {
 		return m.Error
 	}
@@ -80,11 +81,11 @@ func (m StubMap) SetupBoard(initialBoardState *rules.BoardState, settings rules.
 	return nil
 }
 
-func (m StubMap) PreUpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m StubMap) PreUpdateBoard(previousBoardState *rules.BoardState, settings settings.Settings, editor Editor) error {
 	return nil
 }
 
-func (m StubMap) PostUpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error {
+func (m StubMap) PostUpdateBoard(previousBoardState *rules.BoardState, settings settings.Settings, editor Editor) error {
 	if m.Error != nil {
 		return m.Error
 	}

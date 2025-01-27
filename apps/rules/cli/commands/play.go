@@ -17,6 +17,7 @@ import (
 	"rules/board"
 	"rules/client"
 	"rules/maps"
+	"rules/rulesets"
 
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
@@ -57,7 +58,7 @@ type GameState struct {
 	snakeStates map[string]SnakeState
 	gameID      string
 	httpClient  TimedHttpClient
-	ruleset     rules.Ruleset
+	ruleset     rulesets.Ruleset
 	gameMap     maps.GameMap
 	idGenerator func(int) string
 }
@@ -117,7 +118,7 @@ func (gameState *GameState) Initialize() error {
 	}
 
 	// Build ruleset from settings
-	ruleset := rules.NewRulesetBuilder().
+	ruleset := rulesets.NewRulesetBuilder().
 		WithSeed(gameState.Seed).
 		WithParams(gameState.settings).
 		WithSolo(len(gameState.URLs) < 2).
@@ -292,10 +293,10 @@ func (gameState *GameState) createNextBoardState(boardState *rules.BoardState) (
 	wg.Wait()
 	close(stateUpdates)
 
-	var moves []rules.SnakeMove
+	var moves []rulesets.SnakeMove
 	for snakeState := range stateUpdates {
 		gameState.snakeStates[snakeState.ID] = snakeState
-		moves = append(moves, rules.SnakeMove{ID: snakeState.ID, Move: snakeState.LastMove})
+		moves = append(moves, rulesets.SnakeMove{ID: snakeState.ID, Move: snakeState.LastMove})
 	}
 
 	gameOver, boardState, err := gameState.ruleset.Execute(boardState, moves)

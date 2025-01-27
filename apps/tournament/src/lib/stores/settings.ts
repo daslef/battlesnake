@@ -4,38 +4,60 @@ import type { } from '@redux-devtools/extension' // required for devtools typing
 import { Theme } from '../types'
 
 interface SettingsState {
-  engine: string
+  engineUrl: string
   fps: number
-  game: string
+  gameId: string
   showControls: boolean
   showCoords: boolean
   showScoreboard: boolean
-  theme: Theme
   title: string
-  turn: number
+  error: string | null
+  setError: (errorMessage: string) => void
+  setGameId: (gameId: string) => void
   setEngine: (engineUrl: string) => void
+}
+
+interface ThemeState {
+  theme: Theme
+  setTheme: (theme: Theme) => void
 }
 
 const useSettingsStore = create<SettingsState>()(
   devtools(
     persist(
       (set) => ({
-        engine: 'http://localhost:5000',
+        engineUrl: 'http://localhost:5000',
         fps: 6,
-        game: '',
+        gameId: 'tournament',
         showControls: true,
-        showCoords: false,
+        showCoords: true,
         showScoreboard: true,
-        theme: Theme.DARK,
         title: '',
         turn: 0,
-        setEngine: (engineUrl) => set(() => ({ engine: engineUrl })),
+        error: null,
+        setError: (errorMessage) => set((state) => ({ ...state, error: errorMessage })),
+        setGameId: (gameId) => set((state) => ({ ...state, gameId })),
+        setEngine: (engineUrl) => set((state) => ({ ...state, engineUrl }))
       }),
       {
-        name: 'settings-storage',
-      },
-    ),
-  ),
+        name: 'settings-storage'
+      }
+    )
+  )
 )
 
-export { useSettingsStore }
+const useThemeStore = create<ThemeState>()(
+  devtools(
+    persist(
+      (set) => ({
+        theme: Theme.DARK,
+        setTheme: (theme) => {
+          set((state) => ({ ...state, theme: theme }))
+        }
+      }),
+      { name: 'theme-storage' }
+    )
+  )
+)
+
+export { useSettingsStore, useThemeStore }

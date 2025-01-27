@@ -1,6 +1,9 @@
 package client
 
-import "rules"
+import (
+	"rules"
+	"rules/settings"
+)
 
 func exampleSnakeRequest() SnakeRequest {
 	return SnakeRequest{
@@ -70,6 +73,6 @@ func exampleSnakeRequest() SnakeRequest {
 	}
 }
 
-var exampleRulesetSettings = rules.NewSettings(map[string]string{
+var exampleRulesetSettings = settings.NewSettings(map[string]string{
 	rules.ParamFoodSpawnChance: "10",
 })

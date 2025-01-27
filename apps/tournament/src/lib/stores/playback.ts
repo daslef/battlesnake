@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import type { } from '@redux-devtools/extension'
 
+import { loadGameInfo, loadGameEvents } from '../loaders/loadGame'
 import { startPlayback, stopPlayback } from '../playback/animation'
 import { engineEventToFrame, type Frame, PlaybackMode } from '../types'
 
@@ -10,10 +11,10 @@ interface PlaybackStore {
     loadedFrames: Set<Frame>
     frames: Frame[]
     currentFrameIndex: number
-    currentFrame: Frame | null
     mode: PlaybackMode
     finalFrame: null | Frame
     playbackError: string | null
+    isLoading: boolean
     load: (engineURL: string, gameID: string) => void
     reset: () => void
     setCurrentFrame: (index: number) => void
@@ -28,44 +29,29 @@ interface PlaybackStore {
     pause: () => void
     togglePlayPause: () => void
     jumpToFrame: (index: number) => void
-    onFrameLoad: (frame: Frame) => void
-    onFinalFrame: (frame: Frame) => void
 }
 
 const usePlaybackStore = create<PlaybackStore>()(
     devtools(
         persist(
             (set, get) => ({
+                isLoading: false,
                 loadedFrames: new Set(),
                 frames: [],
                 currentFrameIndex: 0,
-                currentFrame: null,
                 playbackError: null,
                 finalFrame: null,
                 mode: PlaybackMode.PAUSED,
                 load: async (engineURL, gameID) => {
-                    const wsUrl = engineURL
-                        .replace(/^https:\/\//i, 'wss://')
-                        .replace(/^http:\/\//i, 'ws://')
-
-                    const gameInfoUrl = `${engineURL}/games/${gameID}`
-                    const gameEventsUrl = `${wsUrl}/games/${gameID}/events`
+                    get().reset()
+                    set(state => ({ ...state, loadedFrames: new Set(), isLoading: true }))
 
                     console.debug(`[playback] loading game ${gameID}`)
 
-                    set(state => ({ ...state, loadedFrames: new Set() }))
-
                     try {
-                        const response = await fetch(gameInfoUrl)
-
-                        if (response.status == 404) {
-                            throw new Error('Game not found')
-                        } else if (!response.ok) {
-                            throw new Error('Error loading game')
-                        }
-
-                        const gameInfo = await response.json()
-                        const ws = new WebSocket(gameEventsUrl)
+                        const gameInfo = await loadGameInfo(engineURL, gameID)
+                        const ws = await loadGameEvents(engineURL, gameID)
+                        set(state => ({ ...state, isLoading: false }))
 
                         ws.onopen = () => {
                             console.debug('[playback] opening engine websocket')
@@ -87,12 +73,26 @@ const usePlaybackStore = create<PlaybackStore>()(
                                 get().frames.push(frame)
                                 get().frames.sort((a: Frame, b: Frame) => a.turn - b.turn)
 
-                                get().onFrameLoad(frame)
+                                if (frame.turn !== 0) {
+                                    return
+                                }
+
+                                get().setCurrentFrame(frame.turn)
+
+                                set((state) => {
+                                    return {
+                                        ...state,
+                                        frame: frame,
+                                        mode: PlaybackMode.PAUSED,
+                                        finalFrame: null
+                                    }
+                                })
+
+
                             } else if (engineEvent.Type == 'game_end') {
                                 console.debug('[playback] received final frame')
 
-                                get().frames[frames.length - 1].isFinalFrame = true
-                                get().onFinalFrame(get().frames[frames.length - 1])
+                                get().frames[get().frames.length - 1].isFinalFrame = true
                             }
                         }
 
@@ -100,10 +100,11 @@ const usePlaybackStore = create<PlaybackStore>()(
                             console.debug('[playback] closing engine websocket')
                         }
 
-                    } catch (e: unknown) {
-                        console.error(e)
-                        set(state => ({ ...state, playbackError: (e as Error).message }))
+                    } catch (error) {
+                        console.error(error)
+                        set(state => ({ ...state, playbackError: (error as Error).message, isLoading: false }))
                     }
+
                 },
                 reset: () => {
                     set((state) => ({ ...state, frames: [], currentFrameIndex: 0, playbackError: null }))
@@ -111,9 +112,8 @@ const usePlaybackStore = create<PlaybackStore>()(
                 setCurrentFrame: (index) => {
                     set((state) => {
                         state.currentFrameIndex = Math.min(Math.max(index, 0), state.frames.length - 1)
-                        state.currentFrame = state.frames[state.currentFrameIndex]
 
-                        if (state.currentFrame.isFinalFrame && state.mode == PlaybackMode.PLAYING) {
+                        if (state.frames[state.currentFrameIndex].isFinalFrame && state.mode == PlaybackMode.PLAYING) {
                             stopPlayback()
                             state.mode = PlaybackMode.FINISHED
                         }
@@ -228,25 +228,6 @@ const usePlaybackStore = create<PlaybackStore>()(
                 jumpToFrame: (i: number) => {
                     get().pause()
                     get().setCurrentFrame(i)
-                },
-                onFrameLoad: (frame: Frame) => {
-                    // Load the first frame when we see it.
-                    if (frame.turn !== 0) {
-                        return
-                    }
-
-                    set((state) => {
-                        get().setCurrentFrame(frame.turn)
-                        return {
-                            ...state,
-                            frame: frame,
-                            mode: PlaybackMode.PAUSED,
-                            finalFrame: null
-                        }
-                    })
-                },
-                onFinalFrame: (frame: Frame) => {
-                    set(state => ({ ...state, finalFrame: frame, mode: PlaybackMode.FINISHED }))
                 },
             }),
             {

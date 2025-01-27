@@ -5,12 +5,13 @@ import (
 	"testing"
 
 	"rules"
+	"rules/settings"
 	"rules/maps"
 	"github.com/stretchr/testify/require"
 )
 
 func TestSetupBoard_NotFound(t *testing.T) {
-	_, err := maps.SetupBoard("does_not_exist", rules.Settings{}, 10, 10, []string{})
+	_, err := maps.SetupBoard("does_not_exist", settings.Settings{}, 10, 10, []string{})
 
 	require.EqualError(t, err, rules.ErrorMapNotFound.Error())
 }
@@ -21,7 +22,7 @@ func TestSetupBoard_Error(t *testing.T) {
 		Error: errors.New("bad map update"),
 	}
 	maps.TestMap(testMap.ID(), testMap, func() {
-		_, err := maps.SetupBoard(testMap.ID(), rules.Settings{}, 10, 10, []string{})
+		_, err := maps.SetupBoard(testMap.ID(), settings.Settings{}, 10, 10, []string{})
 		require.EqualError(t, err, "bad map update")
 	})
 }
@@ -40,7 +41,7 @@ func TestSetupBoard(t *testing.T) {
 	}
 
 	maps.TestMap(testMap.ID(), testMap, func() {
-		boardState, err := maps.SetupBoard(testMap.ID(), rules.Settings{}, 10, 10, []string{"1", "2"})
+		boardState, err := maps.SetupBoard(testMap.ID(), settings.Settings{}, 10, 10, []string{"1", "2"})
 
 		require.NoError(t, err)
 
@@ -87,7 +88,7 @@ func TestUpdateBoard(t *testing.T) {
 			},
 		})
 	maps.TestMap(testMap.ID(), testMap, func() {
-		boardState, err := maps.PostUpdateBoard(testMap, previousBoardState, rules.Settings{})
+		boardState, err := maps.PostUpdateBoard(testMap, previousBoardState, settings.Settings{})
 
 		require.NoError(t, err)
 

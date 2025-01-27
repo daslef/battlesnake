@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+
+import { useThemeStore } from './lib/stores/settings'
 
 import Leaderboard from './components/Leaderboard'
 import Brackets from './components/Brackets'
@@ -7,10 +9,9 @@ import Board from './components/Board'
 import { teamNames } from './data'
 
 import './App.css'
-import { useMemo } from 'react'
-
 
 function App() {
+  const { theme } = useThemeStore()
 
   const [score, setScore] = useState(() => {
     const initialScore = {
@@ -39,8 +40,8 @@ function App() {
   }, [JSON.stringify(score)])
 
   return (
-    <main className="app">
-      <Board />
+    <main className={`app ${theme}`}>
+      <Board gameId='tournament' engineUrl='http://127.0.0.1:5000' />
       <Leaderboard score={sortedScore} />
       <Brackets teamNames={teamNames} setScore={setScore} sortedScore={sortedScore} />
     </main>

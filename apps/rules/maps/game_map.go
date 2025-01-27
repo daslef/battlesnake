@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"rules"
+	"rules/settings"
 )
 
 type GameMap interface {
@@ -15,7 +16,7 @@ type GameMap interface {
 	Meta() Metadata
 
 	// Called to generate a new board. The map is responsible for placing all snakes, food.
-	SetupBoard(initialBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
+	SetupBoard(initialBoardState *rules.BoardState, settings settings.Settings, editor Editor) error
 
 	// Called every turn to optionally update the board before the board is sent to snakes to get their moves.
 	// Changes made here will be seen by snakes before before making their moves, but users in the
@@ -25,12 +26,12 @@ type GameMap interface {
 	// later in the same turn, but will not nessecarily be available when processing later turns.
 	//
 	// Disclaimer: Unless you have a specific usecase, PostUpdateBoard is the better function to use.
-	PreUpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
+	PreUpdateBoard(previousBoardState *rules.BoardState, settings settings.Settings, editor Editor) error
 
 	// Called every turn to optionally update the board after all other rules have been applied.
 	// Changes made here will be seen by both snakes and users in the browser, before snakes
 	// make their next moves.
-	PostUpdateBoard(previousBoardState *rules.BoardState, settings rules.Settings, editor Editor) error
+	PostUpdateBoard(previousBoardState *rules.BoardState, settings settings.Settings, editor Editor) error
 }
 
 type Metadata struct {

@@ -1,3 +1,31 @@
+export type SvgCalcParams = {
+    cellSize: number
+    cellSizeHalf: number
+    cellSpacing: number
+    gridBorder: number
+    height: number
+    width: number
+}
+
+export type SvgPoint = {
+    x: number
+    y: number
+}
+
+export type SvgCircleProps = {
+    cx: number
+    cy: number
+}
+
+export type SvgRectProps = {
+    x: number
+    y: number
+    width: number
+    height: number
+}
+
+
+
 export enum Setting {
     AUTOPLAY = 'autoplay',
     ENGINE = 'engine',
