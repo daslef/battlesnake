@@ -27,22 +27,6 @@ export function svgCalcCellRect(params: SvgCalcParams, p: Point): SvgRectProps {
   return { x: topLeft.x, y: topLeft.y, width: params.cellSize, height: params.cellSize }
 }
 
-export function svgCalcCellLabelBottom(params: SvgCalcParams, p: Point): SvgPoint {
-  const center = svgCalcCellCenter(params, p)
-  return {
-    x: center.x,
-    y: center.y + params.cellSizeHalf + params.gridBorder / 2
-  }
-}
-
-export function svgCalcCellLabelLeft(params: SvgCalcParams, p: Point): SvgPoint {
-  const center = svgCalcCellCenter(params, p)
-  return {
-    x: center.x - params.cellSizeHalf - params.gridBorder / 2,
-    y: center.y
-  }
-}
-
 
 export function fromLocalStorage(key: string, defaultValue: boolean | number | string) {
   const val = localStorage.getItem(`setting.${key}`)

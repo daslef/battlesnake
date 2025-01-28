@@ -12,10 +12,9 @@ interface PlaybackStore {
     frames: Frame[]
     currentFrameIndex: number
     mode: PlaybackMode
-    finalFrame: null | Frame
     playbackError: string | null
     isLoading: boolean
-    load: (engineURL: string, gameID: string) => void
+    load: (engineURL: string) => void
     reset: () => void
     setCurrentFrame: (index: number) => void
     setMode: (mode: PlaybackMode) => void
@@ -23,8 +22,6 @@ interface PlaybackStore {
     lastFrame: () => void
     prevFrame: () => void
     nextFrame: () => void
-    prevEliminationFrame: () => void
-    nextEliminationFrame: () => void
     play: () => void
     pause: () => void
     togglePlayPause: () => void
@@ -33,207 +30,133 @@ interface PlaybackStore {
 
 const usePlaybackStore = create<PlaybackStore>()(
     devtools(
-        persist(
-            (set, get) => ({
-                isLoading: false,
-                loadedFrames: new Set(),
-                frames: [],
-                currentFrameIndex: 0,
-                playbackError: null,
-                finalFrame: null,
-                mode: PlaybackMode.PAUSED,
-                load: async (engineURL, gameID) => {
-                    get().reset()
-                    set(state => ({ ...state, loadedFrames: new Set(), isLoading: true }))
+        // persist(
+        (set, get) => ({
+            isLoading: false,
+            loadedFrames: new Set(),
+            frames: [],
+            currentFrameIndex: 0,
+            playbackError: null,
+            mode: PlaybackMode.PAUSED,
+            load: async (engineURL) => {
+                get().reset()
+                set(state => ({ ...state, loadedFrames: new Set(), isLoading: true }))
 
-                    console.debug(`[playback] loading game ${gameID}`)
+                console.debug(`[playback] loading game`)
 
-                    try {
-                        const gameInfo = await loadGameInfo(engineURL, gameID)
-                        const ws = await loadGameEvents(engineURL, gameID)
-                        set(state => ({ ...state, isLoading: false }))
+                try {
+                    const gameInfo = await loadGameInfo(engineURL)
+                    const ws = await loadGameEvents(engineURL)
+                    set(() => ({ isLoading: false }))
 
-                        ws.onopen = () => {
-                            console.debug('[playback] opening engine websocket')
-                        }
-
-                        ws.onmessage = (message: { data: string }) => {
-                            const engineEvent = JSON.parse(message.data)
-
-                            if (engineEvent.Data.Turn == 0) {
-                                // loadedFrames = new Set()
-                                // frames = []
-                                console.debug('[playback] received new game')
-                            }
-
-                            if (engineEvent.Type == 'frame' && !get().loadedFrames.has(engineEvent.Data.Turn)) {
-                                get().loadedFrames.add(engineEvent.Data.Turn)
-
-                                const frame = engineEventToFrame(gameInfo, engineEvent.Data)
-                                get().frames.push(frame)
-                                get().frames.sort((a: Frame, b: Frame) => a.turn - b.turn)
-
-                                if (frame.turn !== 0) {
-                                    return
-                                }
-
-                                get().setCurrentFrame(frame.turn)
-
-                                set((state) => {
-                                    return {
-                                        ...state,
-                                        frame: frame,
-                                        mode: PlaybackMode.PAUSED,
-                                        finalFrame: null
-                                    }
-                                })
-
-
-                            } else if (engineEvent.Type == 'game_end') {
-                                console.debug('[playback] received final frame')
-
-                                get().frames[get().frames.length - 1].isFinalFrame = true
-                            }
-                        }
-
-                        ws.onclose = () => {
-                            console.debug('[playback] closing engine websocket')
-                        }
-
-                    } catch (error) {
-                        console.error(error)
-                        set(state => ({ ...state, playbackError: (error as Error).message, isLoading: false }))
+                    ws.onopen = () => {
+                        console.debug('[playback] opening engine websocket')
                     }
 
-                },
-                reset: () => {
-                    set((state) => ({ ...state, frames: [], currentFrameIndex: 0, playbackError: null }))
-                },
-                setCurrentFrame: (index) => {
-                    set((state) => {
-                        state.currentFrameIndex = Math.min(Math.max(index, 0), state.frames.length - 1)
+                    ws.onmessage = (message: { data: string }) => {
+                        const engineEvent = JSON.parse(message.data)
 
-                        if (state.frames[state.currentFrameIndex].isFinalFrame && state.mode == PlaybackMode.PLAYING) {
-                            stopPlayback()
-                            state.mode = PlaybackMode.FINISHED
+                        if (engineEvent.Data.Turn == 0) {
+                            console.debug('[playback] received new game')
                         }
 
-                        return state
-                    })
-                },
-                setMode: (mode) => {
-                    set((state) => ({ ...state, mode }))
-                },
-                firstFrame: () => {
-                    set(state => {
-                        if (state.mode == PlaybackMode.PAUSED) {
-                            return { ...state, currentFrameIndex: 0 }
-                        }
-                        return state
-                    })
-                },
-                lastFrame: () => {
-                    set(state => {
-                        if (state.mode == PlaybackMode.PAUSED) {
-                            return { ...state, currentFrameIndex: state.frames.length - 1 }
-                        }
-                        return state
-                    })
-                },
-                prevFrame: () => {
-                    set(state => {
-                        if (state.mode == PlaybackMode.PAUSED) {
-                            return { ...state, currentFrameIndex: state.currentFrameIndex - 1 }
-                        }
-                        return state
-                    })
-                },
-                nextFrame: () => {
-                    set(state => {
-                        if (state.mode == PlaybackMode.PAUSED) {
-                            return { ...state, currentFrameIndex: state.currentFrameIndex + 1 }
-                        }
-                        return state
-                    })
-                },
-                prevEliminationFrame: () => {
-                    set(state => {
-                        if (state.mode !== PlaybackMode.PAUSED) {
-                            return state
-                        }
+                        if (engineEvent.Type == 'frame' && !get().loadedFrames.has(engineEvent.Data.Turn)) {
+                            const updatedLoadedFrames = [...get().loadedFrames, engineEvent.Data.Turn]
+                            set(() => ({ loadedFrames: new Set(updatedLoadedFrames) }))
 
-                        for (let i = state.currentFrameIndex; i >= 0; i--) {
-                            for (let s = 0; s < state.frames[i].snakes.length; s++) {
-                                const snake = state.frames[i].snakes[s]
-                                if (snake.elimination && snake.elimination.turn <= state.currentFrameIndex) {
-                                    const newIndex = snake.elimination.turn - 1
-                                    console.debug(`[playback] jump to elimination frame ${newIndex}`)
-                                    state.setCurrentFrame(newIndex)
-                                    break // return
-                                }
+                            const frame = engineEventToFrame(gameInfo, engineEvent.Data)
+                            const updatedFrames = [...get().frames, frame].toSorted((a: Frame, b: Frame) => a.turn - b.turn)
+                            set(() => ({ frames: updatedFrames }))
+
+                            if (frame.turn !== 0) {
+                                return
                             }
-                            state.firstFrame()
-                        }
 
-                        return state
-                    })
-                },
-                nextEliminationFrame: () => {
-                    set(state => {
-                        if (state.mode !== PlaybackMode.PAUSED) {
-                            return state
-                        }
+                            get().setCurrentFrame(frame.turn)
 
-                        for (let i = state.currentFrameIndex + 2; i < state.frames.length; i++) {
-                            for (let s = 0; s < state.frames[i].snakes.length; s++) {
-                                const snake = state.frames[i].snakes[s]
-                                if (snake.elimination && snake.elimination.turn > state.currentFrameIndex + 1) {
-                                    const newIndex = snake.elimination.turn - 1
-                                    console.debug(`[playback] jump to elimination frame ${newIndex}`)
-                                    state.setCurrentFrame(newIndex)
-                                    break // return
-                                }
-                            }
-                        }
+                            set(() => ({
+                                frame: frame,
+                                mode: PlaybackMode.PAUSED,
+                            }))
 
-                        state.lastFrame()
+                        } else if (engineEvent.Type == 'game_end') {
+                            console.debug('[playback] received final frame')
 
-                        return state
-                    })
-                },
-                play: () => {
-                    set(state => {
-                        const fps = 10
-                        if (state.mode !== PlaybackMode.PAUSED) {
-                            return state
+                            get().frames[get().frames.length - 1].isFinalFrame = true
                         }
-                        startPlayback(fps, () => {
-                            state.setCurrentFrame(state.currentFrameIndex + 1)
-                        })
-                        state.setMode(PlaybackMode.PLAYING)
-                        return state
-                    })
-                },
-                pause: () => {
-                    stopPlayback()
-                    get().setMode(PlaybackMode.PAUSED)
-                },
-                togglePlayPause: () => {
-                    if (get().mode == PlaybackMode.PAUSED) {
-                        get().play()
-                    } else if (get().mode == PlaybackMode.PLAYING) {
-                        get().pause()
                     }
-                },
-                jumpToFrame: (i: number) => {
-                    get().pause()
-                    get().setCurrentFrame(i)
-                },
-            }),
-            {
-                name: 'playback-storage',
+
+                    ws.onclose = () => {
+                        console.debug('[playback] closing engine websocket')
+                    }
+
+                } catch (error) {
+                    console.error(error)
+                    set(state => ({ ...state, playbackError: (error as Error).message, isLoading: false }))
+                }
+
             },
-        ),
+            reset: () => {
+                set((state) => ({ ...state, frames: [], currentFrameIndex: 0, playbackError: null }))
+            },
+            setCurrentFrame: (index) => {
+                set((state) => ({ currentFrameIndex: Math.min(Math.max(index, 0), state.frames.length - 1) }))
+
+                if (get().frames[get().currentFrameIndex].isFinalFrame && get().mode == PlaybackMode.PLAYING) {
+                    stopPlayback()
+                    set(() => ({ mode: PlaybackMode.FINISHED }))
+                }
+            },
+            setMode: (mode) => {
+                set((state) => ({ ...state, mode }))
+            },
+            firstFrame: () => {
+                set(() => ({ mode: PlaybackMode.PAUSED, currentFrameIndex: 0 }))
+            },
+            lastFrame: () => {
+                set((state) => ({ mode: PlaybackMode.PAUSED, currentFrameIndex: state.frames.length - 1 }))
+            },
+            prevFrame: () => {
+                if (get().currentFrameIndex === 0) {
+                    return
+                }
+                set((state) => ({ mode: PlaybackMode.PAUSED, currentFrameIndex: state.currentFrameIndex - 1 }))
+            },
+            nextFrame: () => {
+                if (get().currentFrameIndex === get().frames.length - 1) {
+                    return
+                }
+                set((state) => ({ mode: PlaybackMode.PAUSED, currentFrameIndex: state.currentFrameIndex + 1 }))
+            },
+            play: () => {
+                const fps = 10
+                if (get().mode !== PlaybackMode.PAUSED) {
+                    return
+                }
+                startPlayback(fps, () => {
+                    get().setCurrentFrame(get().currentFrameIndex + 1)
+                })
+                get().setMode(PlaybackMode.PLAYING)
+            },
+            pause: () => {
+                stopPlayback()
+                get().setMode(PlaybackMode.PAUSED)
+            },
+            togglePlayPause: () => {
+                if (get().mode == PlaybackMode.PAUSED) {
+                    get().play()
+                } else if (get().mode == PlaybackMode.PLAYING) {
+                    get().pause()
+                }
+            },
+            jumpToFrame: (i: number) => {
+                get().pause()
+                get().setCurrentFrame(i)
+            },
+        }),
+        {
+            name: 'playback-storage',
+        },
     ),
 )
 

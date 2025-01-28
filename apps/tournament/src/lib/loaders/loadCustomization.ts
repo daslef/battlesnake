@@ -1,24 +1,23 @@
-const mediaCache: { [key: string]: string } = {}
+import fetcher from './fetcher'
 
 export async function fetchCustomizationSvgDef(type: string, name: string) {
   const mediaPath = `snakes/${type}s/${name}.svg`
+  try {
+    const response = await fetcher(`https://media.battlesnake.com/${mediaPath}`)
+    const textSVG = await response.text()
+    const tempElememt = document.createElement('template')
+    tempElememt.innerHTML = textSVG.trim()
+    console.debug(`[customizations] loaded svg definition for ${mediaPath}`)
 
-  if (!(mediaPath in mediaCache)) {
-    mediaCache[mediaPath] = await fetch(`https://media.battlesnake.com/${mediaPath}`)
-      .then((response) => response.text())
-      .then((textSVG) => {
-        const tempElememt = document.createElement('template')
-        tempElememt.innerHTML = textSVG.trim()
-        console.debug(`[customizations] loaded svg definition for ${mediaPath}`)
+    if (tempElememt.content.firstChild === null) {
+      console.debug('[customizations] error loading customization, no elements found')
+      return ''
+    }
 
-        if (tempElememt.content.firstChild === null) {
-          console.debug('[customizations] error loading customization, no elements found')
-          return ''
-        }
-
-        const child = <HTMLElement>tempElememt.content.firstChild
-        return child.innerHTML
-      })
+    const child = <HTMLElement>tempElememt.content.firstChild
+    console.debug(`[customizations] child: ${child.innerHTML}`)
+    return child.innerHTML
+  } catch (error: unknown) {
+    throw error as Error
   }
-  return mediaCache[mediaPath]
 }

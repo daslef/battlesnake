@@ -6,14 +6,10 @@ import { Theme } from '../types'
 interface SettingsState {
   engineUrl: string
   fps: number
-  gameId: string
-  showControls: boolean
-  showCoords: boolean
   showScoreboard: boolean
   title: string
   error: string | null
   setError: (errorMessage: string) => void
-  setGameId: (gameId: string) => void
   setEngine: (engineUrl: string) => void
 }
 
@@ -24,25 +20,19 @@ interface ThemeState {
 
 const useSettingsStore = create<SettingsState>()(
   devtools(
-    persist(
-      (set) => ({
-        engineUrl: 'http://localhost:5000',
-        fps: 6,
-        gameId: 'tournament',
-        showControls: true,
-        showCoords: true,
-        showScoreboard: true,
-        title: '',
-        turn: 0,
-        error: null,
-        setError: (errorMessage) => set((state) => ({ ...state, error: errorMessage })),
-        setGameId: (gameId) => set((state) => ({ ...state, gameId })),
-        setEngine: (engineUrl) => set((state) => ({ ...state, engineUrl }))
-      }),
-      {
-        name: 'settings-storage'
-      }
-    )
+    // persist(
+    (set) => ({
+      engineUrl: 'http://localhost:5000',
+      fps: 6,
+      showScoreboard: true,
+      error: null,
+      setError: (errorMessage) => set((state) => ({ ...state, error: errorMessage })),
+      setEngine: (engineUrl) => set((state) => ({ ...state, engineUrl }))
+    }),
+    {
+      name: 'settings-storage'
+    }
+    // )
   )
 )
 

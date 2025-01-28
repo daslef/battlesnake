@@ -4,8 +4,6 @@ import { type SvgCalcParams, PlaybackMode, Elimination } from '../lib/types'
 import { SvgSnake } from './svg/SvgSnake'
 import { SvgFood } from './svg/SvgFood'
 import { SvgGrid } from './svg/SvgGrid'
-// import PlaybackControls from "$lib/components/PlaybackControls.svelte";
-// import Scoreboard from "$lib/components/Scoreboard.svelte";
 
 import iconPlay from '../assets/icons/play.svg'
 import iconPause from '../assets/icons/pause.svg'
@@ -43,12 +41,6 @@ function GameScore() {
     }
   }
 
-  function highlightSnake(id: string) {
-    highlightedSnakeID = highlightedSnakeID == id ? null : id
-  }
-
-  let highlightedSnakeID: string | null
-
   const playback = usePlaybackStore()
   const currentFrame = playback.frames[playback.currentFrameIndex]
 
@@ -75,8 +67,7 @@ function GameScore() {
 
       {sortedSnakes.map((snake) => (
         <div
-          className={`p-2 cursor-pointer rounded-sm border-solid border-2 border-transparent hover:border-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-800 ${snake.isEliminated ? 'eliminated' : ''} ${snake.id == highlightedSnakeID ? 'highlighted' : ''}`}
-          onClick={() => highlightSnake(snake.id)}
+          className={`p-2 cursor-pointer rounded-sm border-solid border-2 border-transparent hover:border-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-800 ${snake.isEliminated ? 'eliminated' : ''}`}
           role="presentation"
           key={`gamescore-${snake.id}`}
         >
@@ -157,7 +148,7 @@ function PlaybackControls() {
   )
 }
 
-function Gameboard({ showCoordinates }: { showCoordinates: boolean }) {
+function Gameboard() {
   const frames = usePlaybackStore(state => state.frames)
   const currentFrameIndex = usePlaybackStore(state => state.currentFrameIndex)
 
@@ -187,8 +178,6 @@ function Gameboard({ showCoordinates }: { showCoordinates: boolean }) {
     width: svgWidth
   } as SvgCalcParams
 
-  const highlightedSnakeID = null // TODO
-
   const currentFrame = frames[currentFrameIndex]
 
   if (!currentFrame) {
@@ -200,29 +189,16 @@ function Gameboard({ showCoordinates }: { showCoordinates: boolean }) {
       <SvgGrid
         gridWidth={frames[0].width}
         gridHeight={frames[0].height}
-        showLabels={showCoordinates}
         svgCalcParams={svgCalcParams}
       />
 
-      {highlightedSnakeID &&
-        currentFrame.snakes
-          .filter((snake) => snake.id !== highlightedSnakeID)
-          .map((snake) => <SvgSnake key={snake.id} snake={snake} svgCalcParams={svgCalcParams} opacity={0.1} />)}
+      {currentFrame.snakes
+        .filter((snake) => snake.isEliminated)
+        .map((snake) => <SvgSnake key={snake.id} snake={snake} svgCalcParams={svgCalcParams} opacity={0.1} />)}
 
-      {highlightedSnakeID &&
-        currentFrame.snakes
-          .filter((snake) => snake.id === highlightedSnakeID)
-          .map((snake) => <SvgSnake key={snake.id} snake={snake} svgCalcParams={svgCalcParams} />)}
-
-      {!highlightedSnakeID &&
-        currentFrame.snakes
-          .filter((snake) => snake.isEliminated)
-          .map((snake) => <SvgSnake key={snake.id} snake={snake} svgCalcParams={svgCalcParams} opacity={0.1} />)}
-
-      {!highlightedSnakeID &&
-        currentFrame.snakes
-          .filter((snake) => !snake.isEliminated)
-          .map((snake) => <SvgSnake key={snake.id} snake={snake} svgCalcParams={svgCalcParams} />)}
+      {currentFrame.snakes
+        .filter((snake) => !snake.isEliminated)
+        .map((snake) => <SvgSnake key={snake.id} snake={snake} svgCalcParams={svgCalcParams} />)}
 
       {currentFrame.food.map((foodElement, index) => (
         <SvgFood point={foodElement} key={`food-${index}`} svgCalcParams={svgCalcParams} />
@@ -231,21 +207,18 @@ function Gameboard({ showCoordinates }: { showCoordinates: boolean }) {
   )
 }
 
-export default function Board({ gameId, engineUrl }: { gameId: string; engineUrl: string }) {
+export default function Board({ engineUrl }: { engineUrl: string }) {
   const settings = useSettingsStore()
   const playback = usePlaybackStore()
 
   useEffect(() => {
     settings.setEngine(engineUrl)
-    settings.setGameId(gameId)
-    playback.load(settings.engineUrl, settings.gameId)
-  }, [settings.gameId])
+    playback.load(settings.engineUrl)
+  }, [])
 
   if (!playback.frames.length) {
     return <p className="p-4 text-lg text-center">Loading game...</p>
   }
-
-  console.log(settings, playback)
 
   return (
     <div className="w-full max-w-screen-xl md:aspect-video mx-auto">
@@ -255,12 +228,10 @@ export default function Board({ gameId, engineUrl }: { gameId: string; engineUrl
             {settings.title && (
               <h1 className="text-center font-bold pt-2 text-lg">{settings.title}</h1>
             )}
-            <Gameboard showCoordinates={settings.showCoords} />
-            {settings.showControls && (
-              <div className="flex justify-evenly text-xl py-2 px-6">
-                <PlaybackControls />
-              </div>
-            )}
+            <Gameboard />
+            <div className="flex justify-evenly text-xl py-2 px-6">
+              <PlaybackControls />
+            </div>
           </div>
           {settings.showScoreboard && (
             <div className="basis-full md:basis-[45%] order-first p-2 md:order-last">

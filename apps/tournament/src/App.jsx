@@ -41,7 +41,10 @@ function App() {
 
   return (
     <main className={`app ${theme}`}>
-      <Board gameId='tournament' engineUrl='http://127.0.0.1:5000' />
+      <button type="button" onClick={() => {
+        fetch('http://localhost:5000/create')
+      }}>Create!</button>
+      <Board engineUrl='http://127.0.0.1:5000' />
       <Leaderboard score={sortedScore} />
       <Brackets teamNames={teamNames} setScore={setScore} sortedScore={sortedScore} />
     </main>

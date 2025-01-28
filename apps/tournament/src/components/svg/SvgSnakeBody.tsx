@@ -206,9 +206,9 @@ export const SvgSnakeBody: React.FC<ISvgSnakeBody> = ({ snake, svgCalcParams }) 
 
     return {
       points,
-      'stroke-width': svgCalcParams.cellSize,
-      'stroke-linecap': 'butt' as const,
-      'stroke-linejoin': 'round' as const
+      'strokeWidth': svgCalcParams.cellSize,
+      'strokeLinecap': 'butt' as const,
+      'strokeLinejoin': 'round' as const
     }
   }
 

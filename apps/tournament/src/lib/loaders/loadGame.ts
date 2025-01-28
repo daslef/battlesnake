@@ -1,34 +1,27 @@
-export async function loadGameInfo(engineURL: string, gameID: string) {
-    const gameInfoUrl = `${engineURL}/games/${gameID}`
+import ReconnectingWebSocket from 'reconnecting-websocket'
+import fetcher from './fetcher'
+
+export async function loadGameInfo(engineURL: string) {
+    const gameInfoUrl = `${engineURL}/game`
 
     try {
-        const response = await fetch(gameInfoUrl)
-
-        if (response.status == 404) {
-            throw new Error('Game not found')
-        } else if (!response.ok) {
-            throw new Error('Error loading game')
-        }
-        const gameInfo = await response.json()
-        return gameInfo
+        const response = await fetcher(gameInfoUrl)
+        return await response.json()
     } catch (e: unknown) {
         console.error(e)
-        throw e as Error
     }
 }
 
-export async function loadGameEvents(engineURL: string, gameID: string) {
+export async function loadGameEvents(engineURL: string) {
     try {
         const wsUrl = engineURL
             .replace(/^https:\/\//i, 'wss://')
             .replace(/^http:\/\//i, 'ws://')
 
-        const gameEventsUrl = `${wsUrl}/games/${gameID}/events`
-        const ws = new WebSocket(gameEventsUrl)
-        return ws
+        const gameEventsUrl = `${wsUrl}/game/events`
+        return new ReconnectingWebSocket(gameEventsUrl)
     } catch (e: unknown) {
         console.error(e)
-        throw e as Error
     }
 
 }

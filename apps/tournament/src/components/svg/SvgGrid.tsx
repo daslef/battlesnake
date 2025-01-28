@@ -6,19 +6,16 @@ import {
 
 import {
   svgCalcCellRect,
-  svgCalcCellLabelBottom,
-  svgCalcCellLabelLeft
 } from '../../lib/helpers'
 
 
 interface ISvgGrid {
   gridWidth: number
   gridHeight: number
-  showLabels: boolean
   svgCalcParams: SvgCalcParams
 }
 
-export const SvgGrid: React.FC<ISvgGrid> = ({ gridWidth, gridHeight, showLabels, svgCalcParams }) => {
+export const SvgGrid: React.FC<ISvgGrid> = ({ gridWidth, gridHeight, svgCalcParams }) => {
   function generateProduct() {
     const result = []
     for (let x = 0; x < gridWidth; x++) {
@@ -40,30 +37,6 @@ export const SvgGrid: React.FC<ISvgGrid> = ({ gridWidth, gridHeight, showLabels,
           />
         )
       })}
-
-      {showLabels && Array(gridHeight).map((_, x) => (
-        <text
-          className="coordinate-label text-[0.35rem] fill-neutral-500"
-          text-anchor="middle"
-          transform="translate(0, 2)"
-          key={`label_x_${x}`}
-          {...svgCalcCellLabelBottom(svgCalcParams, { x: x, y: 0 })}
-        >
-          {x}
-        </text>
-      ))}
-
-      {showLabels && Array(gridHeight).map((_, y) => (
-        <text
-          className="coordinate-label text-[0.35rem] fill-neutral-500"
-          text-anchor="middle"
-          transform="translate(0, 2)"
-          key={`label_y_${y}`}
-          {...svgCalcCellLabelLeft(svgCalcParams, { x: 0, y: y })}
-        >
-          {y}
-        </text>
-      ))}
     </g>
   )
 }

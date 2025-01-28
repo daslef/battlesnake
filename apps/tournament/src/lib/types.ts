@@ -24,19 +24,13 @@ export type SvgRectProps = {
     height: number
 }
 
-
-
 export enum Setting {
-    AUTOPLAY = 'autoplay',
     ENGINE = 'engine',
     FPS = 'fps',
     GAME = 'game',
-    SHOW_CONTROLS = 'showControls',
-    SHOW_COORDS = 'showCoords',
     SHOW_SCOREBOARD = 'showScoreboard',
     THEME = 'theme',
     TITLE = 'title',
-    TURN = 'turn'
 }
 
 export enum Theme {

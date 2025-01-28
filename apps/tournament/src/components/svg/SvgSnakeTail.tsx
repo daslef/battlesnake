@@ -63,8 +63,12 @@ export const SvgSnakeTail: React.FC<ISvgSnakeTail> = ({ snake, svgCalcParams }) 
   const tailRectProps = svgCalcCellRect(svgCalcParams, snake.body[snake.body.length - 1])
   const tailTransform = calcTailTransform(snake)
 
-  if (!drawTail || !tailSvgDef) {
+  if (!drawTail) {
     return
+  }
+
+  if (!tailSvgDef) {
+    tailSvgDef = '<path xmlns="http://www.w3.org/2000/svg" d="M50 0H0v100h50l50-50L50 0z"/>'
   }
 
   return (
