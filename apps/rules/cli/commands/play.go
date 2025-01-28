@@ -56,7 +56,6 @@ type GameState struct {
 	// Internal game state
 	settings    map[string]string
 	snakeStates map[string]SnakeState
-	gameID      string
 	httpClient  TimedHttpClient
 	ruleset     rulesets.Ruleset
 	gameMap     maps.GameMap
@@ -98,10 +97,6 @@ func NewPlayCommand() *cobra.Command {
 
 // Setup a GameState once all the fields have been parsed from the command-line.
 func (gameState *GameState) Initialize() error {
-	if gameState.gameID == "" {
-		gameState.gameID = "tournament"
-	}
-
 	gameState.Seed = time.Now().UTC().UnixNano()
 
 	// Set up HTTP client with request timeout
@@ -154,7 +149,6 @@ func (gameState *GameState) Run() error {
 	}
 
 	boardGame := board.Game{
-		ID:     gameState.gameID,
 		Status: "running",
 		Width:  gameState.Width,
 		Height: gameState.Height,
@@ -175,14 +169,6 @@ func (gameState *GameState) Run() error {
 		}
 		defer boardServer.Shutdown()
 		log.INFO.Printf("Board server listening on %s", serverURL)
-
-		boardURL := fmt.Sprintf(gameState.BoardURL+""+"?engine=%s&game=%s", serverURL, gameState.gameID)
-
-		log.INFO.Printf("Opening board URL: %s", boardURL)
-
-		// if err := browser.OpenURL(boardURL); err != nil {
-		// 	log.ERROR.Printf("Failed to open browser: %v", err)
-		// }
 
 		// send turn zero to websocket server
 		boardServer.SendEvent(gameState.buildFrameEvent(boardState))
@@ -426,7 +412,6 @@ func (gameState *GameState) getRequestBodyForSnake(boardState *rules.BoardState,
 
 func (gameState *GameState) createClientGame() client.Game {
 	return client.Game{
-		ID:      gameState.gameID,
 		Timeout: gameState.Timeout,
 		Ruleset: client.Ruleset{
 			Name:     gameState.ruleset.Name(),

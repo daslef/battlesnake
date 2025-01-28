@@ -8,7 +8,6 @@ import (
 
 // JSON structure returned by the game status endpoint.
 type Game struct {
-	ID           string            `json:"ID"`
 	Status       string            `json:"Status"`
 	Width        int               `json:"Width"`
 	Height       int               `json:"Height"`

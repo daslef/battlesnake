@@ -61,7 +61,6 @@ func TestGetIndividualBoardStateForSnake(t *testing.T) {
 	gameState := buildDefaultGameState()
 	err := gameState.Initialize()
 	require.NoError(t, err)
-	gameState.gameID = "GAME_ID"
 	gameState.snakeStates = map[string]SnakeState{
 		s1State.ID: s1State,
 		s2State.ID: s2State,
@@ -106,7 +105,6 @@ func TestSettingsRequestSerialization(t *testing.T) {
 
 			err := gameState.Initialize()
 			require.NoError(t, err)
-			gameState.gameID = "GAME_ID"
 			gameState.snakeStates = map[string]SnakeState{s1State.ID: s1State, s2State.ID: s2State}
 
 			snakeRequest := gameState.getRequestBodyForSnake(state, s1State)

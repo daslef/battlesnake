@@ -40,13 +40,12 @@ func NewBoardServer(game Game) *BoardServer {
 		},
 	}
 
-	mux.HandleFunc("/games/"+game.ID, server.handleGame)
-	mux.HandleFunc("/games/"+game.ID+"/events", server.handleWebsocket)
+	mux.HandleFunc("/game", server.handleGame)
+	mux.HandleFunc("/game/events", server.handleWebsocket)
 
 	return server
 }
 
-// Handle the /games/:id request made by the board to fetch the game metadata.
 func (server *BoardServer) handleGame(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(struct {
@@ -59,7 +58,6 @@ func (server *BoardServer) handleGame(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Handle the /games/:id/events websocket request made by the board to receive game events.
 func (server *BoardServer) handleWebsocket(w http.ResponseWriter, r *http.Request) {
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
