@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import type { Snake, SvgCalcParams } from '../../lib/types'
 import { fetchCustomizationSvgDef } from '../../lib/loaders/loadCustomization'
 import { svgCalcCellRect, calcDestinationWrapPosition, isAdjacentPoint } from '../../lib/helpers'
@@ -9,8 +9,14 @@ interface ISvgSnakeHead {
   svgCalcParams: SvgCalcParams
 }
 
+const DEFAULT_HEAD = `<circle fill="none" cx="12.52" cy="28.55" r="9.26"/>
+        <path d="M0 100h100L56 55.39l44-39.89V.11L0 0zm12.52-80.71a9.26 9.26 0 1 1-9.26 9.26 9.26 9.26 0 0 1 9.26-9.26z"/>`
+
 
 export const SvgSnakeHead: React.FC<ISvgSnakeHead> = ({ snake, svgCalcParams }) => {
+
+  const [customHead, setCustomHead] = useState(DEFAULT_HEAD)
+
   function calcHeadDirection(snake: Snake): string {
     const [head, neckPoint] = snake.body.slice(0, 2)
 
@@ -48,8 +54,6 @@ export const SvgSnakeHead: React.FC<ISvgSnakeHead> = ({ snake, svgCalcParams }) 
     return snake.isEliminated && snake.elimination?.cause == 'snake-self-collision'
   }
 
-  let headSvgDef;
-
   const headRectProps = svgCalcCellRect(svgCalcParams, snake.body[0])
   const headDirection = calcHeadDirection(snake)
   const headTransform = calcHeadTransform(headDirection)
@@ -58,14 +62,9 @@ export const SvgSnakeHead: React.FC<ISvgSnakeHead> = ({ snake, svgCalcParams }) 
 
   useEffect(() => {
     fetchCustomizationSvgDef("head", snake.head).then(html => {
-      headSvgDef = html
+      setCustomHead(html)
     })
   }, [])
-
-  if (!headSvgDef) {
-    headSvgDef = `<circle fill="none" cx="12.52" cy="28.55" r="9.26"/>
-        <path d="M0 100h100L56 55.39l44-39.89V.11L0 0zm12.52-80.71a9.26 9.26 0 1 1-9.26 9.26 9.26 9.26 0 0 1 9.26-9.26z"/>`
-  }
 
   return (
     <svg
@@ -74,7 +73,7 @@ export const SvgSnakeHead: React.FC<ISvgSnakeHead> = ({ snake, svgCalcParams }) 
       fill={snake.color}
       {...headRectProps}
     >
-      <g transform={headTransform} dangerouslySetInnerHTML={{ __html: headSvgDef }}></g>
+      <g transform={headTransform} dangerouslySetInnerHTML={{ __html: customHead }}></g>
     </svg>
 
   )

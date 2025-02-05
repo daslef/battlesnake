@@ -1,7 +1,6 @@
 package rulesets
 
 import (
-	"math/rand"
 	"rules"
 	"rules/settings"
 	"sort"
@@ -321,18 +320,6 @@ func growSnake(snake *rules.Snake) {
 	if len(snake.Body) > 0 {
 		snake.Body = append(snake.Body, snake.Body[len(snake.Body)-1])
 	}
-}
-
-// Deprecated: handled by maps.Standard
-func SpawnFoodStandard(b *rules.BoardState, settings settings.Settings, moves []SnakeMove) (bool, error) {
-	if IsInitialization(b, settings, moves) {
-		return false, nil
-	}
-	foodSpawnChance := settings.Int(rules.ParamFoodSpawnChance, 0)
-	if foodSpawnChance > 0 && int(rand.Intn(100)) < foodSpawnChance {
-		return false, rules.PlaceFoodRandomly(rules.GlobalRand, b, 1)
-	}
-	return false, nil
 }
 
 func GameOverStandard(b *rules.BoardState, settings settings.Settings, moves []SnakeMove) (bool, error) {

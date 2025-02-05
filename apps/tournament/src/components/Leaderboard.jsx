@@ -1,4 +1,5 @@
 import { forwardRef } from "react"
+import { Text, Section } from '@radix-ui/themes'
 import FlipMove from 'react-flip-move';
 
 import jsSvg from '../assets/logos/js.svg'
@@ -41,10 +42,10 @@ const LeaderboardParticipant = forwardRef(function LeaderboardParticipant(props,
 
 export default function Leaderboard({ score }) {
     return (
-        <article className="leaderboard">
-            <h2 className='leaderboard__heading'>Таблица</h2>
+        <Section className="leaderboard">
+            <Text size="5">Таблица</Text>
             <table>
-                <tbody className='leaderboard__content'>
+                <tbody className='leaderboard__content' style={{ position: "relative" }}>
                     <FlipMove staggerDurationBy="30"
                         duration={500}
                         enterLeaveAnimation='accordianVertical'
@@ -57,7 +58,7 @@ export default function Leaderboard({ score }) {
                     </FlipMove>
                 </tbody>
             </table>
-        </article>
-
+            {/* </article> */}
+        </Section>
     )
 }

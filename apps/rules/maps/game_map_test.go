@@ -13,13 +13,6 @@ func TestMetadataValidate(t *testing.T) {
 		boardState *rules.BoardState
 		expected   error
 	}{
-		"unlimited": {
-			Metadata{
-				BoardSizes: AnySize(),
-			},
-			rules.NewBoardState(99, 99),
-			nil,
-		},
 		"in sizes": {
 			Metadata{
 				BoardSizes: OddSizes(7, 25),

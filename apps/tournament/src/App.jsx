@@ -1,18 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
-
-import { useThemeStore } from './lib/stores/settings'
+import { Box, Container, Flex } from '@radix-ui/themes'
 
 import Leaderboard from './components/Leaderboard'
 import Brackets from './components/Brackets'
-import Board from './components/Board'
 
 import { teamNames } from './data'
 
-import './App.css'
-
 function App() {
-  const { theme } = useThemeStore()
-
   const [score, setScore] = useState(() => {
     const initialScore = {
       gold: 0, silver: 0, bonus: 0, result: 0
@@ -40,14 +34,10 @@ function App() {
   }, [JSON.stringify(score)])
 
   return (
-    <main className={`app ${theme}`}>
-      <button type="button" onClick={() => {
-        fetch('http://localhost:5000/create')
-      }}>Create!</button>
-      <Board engineUrl='http://127.0.0.1:5000' />
+    <Flex style={{ background: "var(--gray-1)", justifyContent: "center", gap: "2vh", padding: "20px", alignItems: "flex-start" }}>
       <Leaderboard score={sortedScore} />
       <Brackets teamNames={teamNames} setScore={setScore} sortedScore={sortedScore} />
-    </main>
+    </Flex>
   )
 }
 

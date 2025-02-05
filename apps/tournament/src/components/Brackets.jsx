@@ -1,5 +1,8 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import { Dialog, Box, Button, Text } from "@radix-ui/themes"
+import Board from './Board'
 
+import { usePlaybackStore } from '../lib/stores/playback'
 import { k_combinations } from '../lib'
 
 import jsSvg from '../assets/logos/js.svg'
@@ -8,7 +11,6 @@ import digitTwoSvg from '../assets/icons/digit-two.svg'
 import bowSvg from '../assets/icons/bow.svg'
 
 import { teamIcons } from '../data'
-import { useState } from 'react'
 
 
 function BracketParticipant({ teamName, languageLogo, setScore }) {
@@ -40,29 +42,59 @@ function BracketParticipant({ teamName, languageLogo, setScore }) {
 }
 
 function BracketMatch({ teamNames, setScore, heading }) {
+    const load = usePlaybackStore(store => store.load)
+
     const [completed, setCompleted] = useState(false)
 
     return (
-        <table className="bracket__match match">
-            <thead>
-                <tr style={{ display: "flex", alignItems: "center", }}>
-                    <th className='match__heading' colSpan={5}>{heading}</th>
-                    <td style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto" }}>
-                        <label htmlFor="">Completed</label>
-                        <input type="checkbox" name="" id="" onChange={() => setCompleted(completed => !completed)} />
-                    </td>
+        <Dialog.Root>
+            <Box className="bracket__match match">
+                <table>
+                    <thead>
+                        <tr style={{ display: "flex", alignItems: "center", }}>
+                            <th className='match__heading' colSpan={5}>{heading}</th>
+                            <td style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto" }}>
+                                <label htmlFor="">Completed</label>
+                                <input type="checkbox" name="" id="" onChange={() => setCompleted(completed => !completed)} />
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody className={`${completed ? "match__body match__body--completed" : "match__body"}`}>
+                        {teamNames.map(team => (
+                            <BracketParticipant key={`bracket_${team}`} languageLogo={jsSvg} teamName={team} setScore={setScore} />
+                        ))}
+                    </tbody>
+                </table>
+                <Dialog.Trigger>
+                    <Button onClick={() => {
+                        fetch('http://localhost:5001/new').then(() => {
+                            load('http://127.0.0.1:5000')
+                        })
 
-                </tr>
-            </thead>
-            <tbody className={`${completed ? "match__body match__body--completed" : "match__body"}`}>
-                {teamNames.map(team => (
-                    <BracketParticipant key={`bracket_${team}`} languageLogo={jsSvg} teamName={team} setScore={setScore} />
-                ))}
-            </tbody>
-            <tfoot>
-            </tfoot>
-        </table>
-
+                    }}>Play!</Button>
+                </Dialog.Trigger>
+            </Box>
+            <Dialog.Content maxWidth="80vw" style={{ backgroundColor: "var(--gray-4)" }}>
+                <Board>
+                    <table className="bracket__match match">
+                        <thead>
+                            <tr style={{ display: "flex", alignItems: "center", }}>
+                                <th className='match__heading' colSpan={5}>{heading}</th>
+                                <td style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto" }}>
+                                    <label htmlFor="">Completed</label>
+                                    <input type="checkbox" name="" id="" onChange={() => setCompleted(completed => !completed)} />
+                                </td>
+                            </tr>
+                        </thead>
+                        <tbody className={`${completed ? "match__body match__body--completed" : "match__body"}`}>
+                            {teamNames.map(team => (
+                                <BracketParticipant key={`bracket_${team}`} languageLogo={jsSvg} teamName={team} setScore={setScore} />
+                            ))}
+                        </tbody>
+                    </table>
+                </Board>
+            </Dialog.Content>
+        </Dialog.Root>
     )
 }
 
@@ -119,8 +151,8 @@ export default function Brackets({ teamNames, sortedScore, setScore }) {
 
 
     return (
-        <article className="brackets">
-            <h2 className='brackets__heading'>Сетка</h2>
+        <Box className='brackets' as="article">
+            <Text size="5">Сетка</Text>
             <div className='brackets__content'>
                 <section className="bracket">
                     <h3 className="bracket__heading">Групповая стадия - Тройки</h3>
@@ -148,7 +180,7 @@ export default function Brackets({ teamNames, sortedScore, setScore }) {
 
                 </section>
             </div>
-        </article>
-
+            {/* </article> */}
+        </Box>
     )
 }

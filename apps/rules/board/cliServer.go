@@ -13,9 +13,10 @@ import (
 
 // A minimal server capable of handling the requests from a single browser client running the board viewer.
 type BoardServer struct {
-	game   Game
-	events chan GameEvent // channel for sending events from the game runner to the browser client
-	done   chan bool      // channel for signalling (via closing) that all events have been sent to the browser client
+	connected bool
+	game      Game
+	events    chan GameEvent // channel for sending events from the game runner to the browser client
+	done      chan bool      // channel for signalling (via closing) that all events have been sent to the browser client
 
 	httpServer *http.Server
 }
@@ -30,9 +31,10 @@ func NewBoardServer(game Game) *BoardServer {
 	mux := http.NewServeMux()
 
 	server := &BoardServer{
-		game:   game,
-		events: make(chan GameEvent, 1000), // buffered channel to allow game to run ahead of browser client
-		done:   make(chan bool),
+		connected: false,
+		game:      game,
+		events:    make(chan GameEvent, 1000), // buffered channel to allow game to run ahead of browser client
+		done:      make(chan bool),
 		httpServer: &http.Server{
 			Handler: cors.New(cors.Options{
 				AllowedOrigins: []string{"*"},
@@ -56,6 +58,7 @@ func (server *BoardServer) handleGame(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	server.connected = true
 }
 
 func (server *BoardServer) handleWebsocket(w http.ResponseWriter, r *http.Request) {
@@ -115,9 +118,9 @@ func (server *BoardServer) Listen() (string, error) {
 func (server *BoardServer) Shutdown() {
 	close(server.events)
 
-	log.DEBUG.Printf("Waiting for websocket clients to finish")
+	log.INFO.Printf("Waiting for websocket clients to finish")
 	<-server.done
-	log.DEBUG.Printf("Server is done, exiting")
+	log.INFO.Printf("Server is done, exiting")
 
 	err := server.httpServer.Shutdown(context.Background())
 	if err != nil {
@@ -127,4 +130,8 @@ func (server *BoardServer) Shutdown() {
 
 func (server *BoardServer) SendEvent(event GameEvent) {
 	server.events <- event
+}
+
+func (server *BoardServer) IsConnected() bool {
+	return server.connected
 }

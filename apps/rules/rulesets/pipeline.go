@@ -22,7 +22,6 @@ const (
 // Plugins that wish to extend the available game stages should call RegisterPipelineStageError
 // to add additional stages.
 var globalRegistry = StageRegistry{
-	StageSpawnFoodStandard:   SpawnFoodStandard,
 	StageGameOverSoloSnake:   GameOverSolo,
 	StageGameOverStandard:    GameOverStandard,
 	StageStarvationStandard:  ReduceSnakeHealthStandard,
@@ -36,25 +35,7 @@ var globalRegistry = StageRegistry{
 //
 // If a stage produces an error or an ended game state, the pipeline is halted at that stage.
 type Pipeline interface {
-	// Execute runs the pipeline stages and produces a next game state.
-	//
-	// If any stage produces an error or an ended game state, the pipeline
-	// immediately stops at that stage.
-	//
-	// Errors should be checked and the other results ignored if error is non-nil.
-	//
-	// If the pipeline is already in an error state (this can be checked by calling Err()),
-	// this error will be immediately returned and the pipeline will not run.
-	//
-	// After the pipeline runs, the results will be the result of the last stage that was executed.
 	Execute(*rules.BoardState, settings.Settings, []SnakeMove) (bool, *rules.BoardState, error)
-
-	// Err provides a way to check for errors before/without calling Execute.
-	// Err returns an error if the Pipeline is in an error state.
-	// If this error is not nil, this error will also be returned from Execute, so it is
-	// optional to call Err.
-	// The idea is to reduce error-checking verbosity for the majority of cases where a
-	// Pipeline is immediately executed after construction (i.e. NewPipeline(...).Execute(...)).
 	Err() error
 }
 
@@ -67,7 +48,6 @@ type Pipeline interface {
 type StageFunc func(*rules.BoardState, settings.Settings, []SnakeMove) (bool, error)
 
 // IsInitialization checks whether the current state means the game is initialising (turn zero).
-// Useful for StageFuncs that need to apply different behaviour on initialisation.
 func IsInitialization(b *rules.BoardState, settings settings.Settings, moves []SnakeMove) bool {
 	// We can safely assume that the game state is in the initialisation phase when
 	// the turn hasn't advanced and the moves are empty
@@ -104,49 +84,24 @@ func RegisterPipelineStage(s string, fn StageFunc) {
 	}
 }
 
-// pipeline is an implementation of Pipeline
 type pipeline struct {
-	// stages is a list of stages that should be executed from slice start to end
 	stages []StageFunc
-	// if the pipeline has an error
-	err error
+	err    error
 }
 
 // NewPipeline constructs an instance of Pipeline using the global registry.
-// It is a convenience wrapper for NewPipelineFromRegistry when you want
-// to use the default, global registry.
 func NewPipeline(stageNames ...string) Pipeline {
-	return NewPipelineFromRegistry(globalRegistry, stageNames...)
-}
-
-// NewPipelineFromRegistry constructs an instance of Pipeline, using the specified registry
-// of pipeline stage functions.
-//
-// The order of execution for the pipeline stages will correspond to the order that
-// the stage names are provided.
-//
-// Example:
-//
-//	NewPipelineFromRegistry(r, s, "stage1", "stage2")
-//
-// ... will result in stage "stage1" running first, then stage "stage2" running after.
-//
-// An error will be returned if an unregistered stage name is used (a name that is not
-// mapped in the registry).
-func NewPipelineFromRegistry(registry map[string]StageFunc, stageNames ...string) Pipeline {
-	// this can't be useful and probably indicates a problem
-	if len(registry) == 0 {
+	if len(globalRegistry) == 0 {
 		return &pipeline{err: rules.ErrorEmptyRegistry}
 	}
 
-	// this also can't be useful and probably indicates a problem
 	if len(stageNames) == 0 {
 		return &pipeline{err: rules.ErrorNoStages}
 	}
 
 	p := pipeline{}
 	for _, s := range stageNames {
-		fn, ok := registry[s]
+		fn, ok := globalRegistry[s]
 		if !ok {
 			return pipeline{err: rules.ErrorStageNotFound}
 		}
@@ -164,21 +119,16 @@ func (p pipeline) Err() error {
 
 // impl
 func (p pipeline) Execute(state *rules.BoardState, settings settings.Settings, moves []SnakeMove) (bool, *rules.BoardState, error) {
-	// Design Detail
-	//
 	// If the pipeline is in an error state, Execute must return that error
 	// because the pipeline is invalid and cannot execute.
 	//
 	// This is done for API use convenience to satisfy the common pattern
 	// of wanting to write NewPipeline().Execute(...).
-	//
-	// This way you can do that without having to do 2 error checks.
-	// It defers errors from construction to being checked on execution.
+
 	if p.err != nil {
 		return false, nil, p.err
 	}
 
-	// Actually execute
 	var ended bool
 	var err error
 	state = state.Clone()
@@ -192,6 +142,5 @@ func (p pipeline) Execute(state *rules.BoardState, settings settings.Settings, m
 		}
 	}
 
-	// return the result of the last stage as the final pipeline result
 	return ended, state, err
 }

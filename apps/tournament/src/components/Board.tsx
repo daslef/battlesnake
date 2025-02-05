@@ -1,6 +1,8 @@
-import { useEffect } from 'react'
+import React, { useEffect } from 'react'
+import { Box } from '@radix-ui/themes'
 
 import { type SvgCalcParams, PlaybackMode, Elimination } from '../lib/types'
+
 import { SvgSnake } from './svg/SvgSnake'
 import { SvgFood } from './svg/SvgFood'
 import { SvgGrid } from './svg/SvgGrid'
@@ -59,7 +61,7 @@ function GameScore() {
   }
 
   return (
-    <>
+    <Box className="gamescore">
       <div className="flex flex-row font-bold text-lg">
         <div className="basis-1/2 text-right">TURN</div>
         <div className="basis-1/2 pl-2">{currentFrame.turn}</div>
@@ -67,12 +69,12 @@ function GameScore() {
 
       {sortedSnakes.map((snake) => (
         <div
-          className={`p-2 cursor-pointer rounded-sm border-solid border-2 border-transparent hover:border-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-800 ${snake.isEliminated ? 'eliminated' : ''}`}
+          className={`p-2 cursor-pointer rounded-sm flex flex-col gap-2 ${snake.isEliminated ? 'eliminated' : ''}`}
           role="presentation"
           key={`gamescore-${snake.id}`}
         >
           <div className="flex flex-row font-bold">
-            <p className="grow truncate">{snake.name}</p>
+            <p className="grow">{snake.name}</p>
             <p className="ps-4 text-right">{snake.length}</p>
           </div>
           <div className="flex flex-row text-xs">
@@ -96,7 +98,7 @@ function GameScore() {
           </div>
         </div>
       ))}
-    </>
+    </Box>
   )
 }
 
@@ -207,40 +209,30 @@ function Gameboard() {
   )
 }
 
-export default function Board({ engineUrl }: { engineUrl: string }) {
+export default function Board({ children }: { children: React.ReactNode }) {
   const settings = useSettingsStore()
   const playback = usePlaybackStore()
-
-  useEffect(() => {
-    settings.setEngine(engineUrl)
-    playback.load(settings.engineUrl)
-  }, [])
 
   if (!playback.frames.length) {
     return <p className="p-4 text-lg text-center">Loading game...</p>
   }
 
   return (
-    <div className="w-full max-w-screen-xl md:aspect-video mx-auto">
-      <div className="h-full w-full flex flex-col items-center justify-center">
-        <div className="w-full h-full flex flex-col md:flex-row">
-          <div className="flex flex-col grow">
-            {settings.title && (
-              <h1 className="text-center font-bold pt-2 text-lg">{settings.title}</h1>
-            )}
-            <Gameboard />
-            <div className="flex justify-evenly text-xl py-2 px-6">
-              <PlaybackControls />
-            </div>
-          </div>
-          {settings.showScoreboard && (
-            <div className="basis-full md:basis-[45%] order-first p-2 md:order-last">
-              <GameScore />
-            </div>
-          )}
+    <div className="w-full h-full flex">
+      <div className="flex flex-col grow">
+        <Gameboard />
+        <div className="flex justify-evenly text-xl py-2 px-6">
+          <PlaybackControls />
         </div>
-        )
       </div>
+      {settings.showScoreboard && (
+        <div className="basis-full md:basis-[45%] order-first p-2 md:order-last gap-8 pt-2 flex flex-col">
+          <Box>
+            {children}
+          </Box>
+          <GameScore />
+        </div>
+      )}
     </div>
   )
 }

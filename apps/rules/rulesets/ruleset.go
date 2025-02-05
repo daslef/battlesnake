@@ -6,14 +6,8 @@ import (
 )
 
 type Ruleset interface {
-	// Returns the name of the ruleset, if applicable.
 	Name() string
-
-	// Returns the settings used by the ruleset.
 	Settings() settings.Settings
-
-	// Processes the next turn of the ruleset, returning whether the game has ended, the next BoardState, or an error.
-	// For turn zero (initialization), moves will be left empty.
 	Execute(prevState *rules.BoardState, moves []SnakeMove) (gameOver bool, nextState *rules.BoardState, err error)
 }
 

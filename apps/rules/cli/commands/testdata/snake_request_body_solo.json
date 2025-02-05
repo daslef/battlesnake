@@ -1,8 +1,6 @@
 {
   "game": {
-    "id": "GAME_ID",
     "ruleset": {
-      "name": "solo",
       "settings": {
         "foodSpawnChance": 11
       }

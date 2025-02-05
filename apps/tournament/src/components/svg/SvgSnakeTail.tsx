@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import type { Snake, SvgCalcParams, } from '../../lib/types'
 import { fetchCustomizationSvgDef } from '../../lib/loaders/loadCustomization'
 import { svgCalcCellRect, calcDestinationWrapPosition, isAdjacentPoint } from '../../lib/helpers'
@@ -8,8 +8,12 @@ interface ISvgSnakeTail {
   svgCalcParams: SvgCalcParams
 }
 
+const DEFAULT_TAIL = '<path xmlns="http://www.w3.org/2000/svg" d="M50 0H0v100h50l50-50L50 0z"/>'
+
 
 export const SvgSnakeTail: React.FC<ISvgSnakeTail> = ({ snake, svgCalcParams }) => {
+  const [customTail, setCustomTail] = useState(DEFAULT_TAIL)
+
   function calcDrawTail(snake: Snake): boolean {
     const head = snake.body[0]
     const tail = snake.body[snake.body.length - 1]
@@ -38,24 +42,19 @@ export const SvgSnakeTail: React.FC<ISvgSnakeTail> = ({ snake, svgCalcParams }) 
 
     // Return transform based on relative location
     if (preTail.x > tail.x) {
-      // Moving right
       return 'scale(-1,1) translate(-100,0)'
     } else if (preTail.y > tail.y) {
-      // Moving up
       return 'scale(-1,1) translate(-100,0) rotate(90, 50, 50)'
     } else if (preTail.y < tail.y) {
-      // Moving down
       return 'scale(-1,1) translate(-100,0) rotate(-90, 50, 50)'
     }
-    // Moving left
+
     return ''
   }
 
-  let tailSvgDef;
-
   useEffect(() => {
     fetchCustomizationSvgDef("tail", snake.tail).then(tailHtml => {
-      tailSvgDef = tailHtml
+      setCustomTail(tailHtml)
     })
   }, [])
 
@@ -67,13 +66,9 @@ export const SvgSnakeTail: React.FC<ISvgSnakeTail> = ({ snake, svgCalcParams }) 
     return
   }
 
-  if (!tailSvgDef) {
-    tailSvgDef = '<path xmlns="http://www.w3.org/2000/svg" d="M50 0H0v100h50l50-50L50 0z"/>'
-  }
-
   return (
     <svg className="tail" viewBox="0 0 100 100" fill={snake.color} {...tailRectProps}>
-      <g transform={tailTransform} dangerouslySetInnerHTML={{ __html: tailSvgDef }}>
+      <g transform={tailTransform} dangerouslySetInnerHTML={{ __html: customTail }}>
       </g>
     </svg>
 
