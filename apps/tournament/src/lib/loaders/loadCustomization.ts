@@ -7,7 +7,6 @@ export async function fetchCustomizationSvgDef(type: string, name: string) {
     const textSVG = await response.text()
     const tempElememt = document.createElement('template')
     tempElememt.innerHTML = textSVG.trim()
-    console.debug(`[customizations] loaded svg definition for ${mediaPath}`)
 
     if (tempElememt.content.firstChild === null) {
       console.debug('[customizations] error loading customization, no elements found')
@@ -15,7 +14,6 @@ export async function fetchCustomizationSvgDef(type: string, name: string) {
     }
 
     const child = <HTMLElement>tempElememt.content.firstChild
-    console.debug(`[customizations] child: ${child.innerHTML}`)
     return child.innerHTML
   } catch (error: unknown) {
     throw error as Error

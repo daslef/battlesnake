@@ -61,6 +61,7 @@ const usePlaybackStore = create<PlaybackStore>()(
             if (engineEvent.Type == 'game_end') {
               console.debug('[playback] received final frame')
               get().frames[get().frames.length - 1].isFinalFrame = true
+              get().setMode(PlaybackMode.FINISHED)
             } else if (
               engineEvent.Type == 'frame' &&
               !get().loadedFrames.has(engineEvent.Data.Turn)

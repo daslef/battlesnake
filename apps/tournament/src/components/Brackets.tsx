@@ -68,11 +68,11 @@ const BracketMatch: FC<IBracketMatch> = ({ game, heading }) => {
                     <Text size={"4"} weight={"bold"}>{heading}</Text>
                     <Dialog.Trigger>
                         {isGameCompleted ? <></> : (
-                            <Button size={'1'} color='violet' onClick={() => {
+                            <Button size={'1'} color='violet' style={{ cursor: "pointer" }} onClick={() => {
                                 sendGameInfo(game).then(() => {
                                     load('http://127.0.0.1:5000')
                                 })
-                            }}>Play!</Button>
+                            }} >▶︎</Button>
                         )}
                     </Dialog.Trigger>
                 </Flex>
@@ -84,20 +84,18 @@ const BracketMatch: FC<IBracketMatch> = ({ game, heading }) => {
                     </tbody>
                 </table>
             </Box>
-            <Dialog.Content maxWidth="80vw" style={{ backgroundColor: "var(--gray-4)" }}>
-                <Board>
-                    <table className="bracket__match match">
-                        <thead>
-                            <tr style={{ display: "flex", alignItems: "center", }}>
-                                <th className='match__heading' colSpan={5}>{heading}</th>
-                            </tr>
-                        </thead>
-                        <tbody className={`${isGameCompleted ? "match__body match__body--completed" : "match__body"}`}>
-                            {game.gameParticipants.map(participant => (
-                                <BracketParticipant key={`bracket_${participant.snakeName}`} participant={participant} isGameCompleted={isGameCompleted} />
-                            ))}
-                        </tbody>
-                    </table>
+            <Dialog.Content maxWidth="80vw" style={{ backgroundColor: "var(--gray-4)" }} className='dialog'>
+                <Board game={game}>
+                    <Flex direction={"column"} gap={"2"} mt={'7'}>
+                        <Dialog.Title className='text-center'>{heading}</Dialog.Title>
+                        <table className="bracket__match match">
+                            <tbody className={`${isGameCompleted ? "match__body match__body--completed" : "match__body"}`}>
+                                {game.gameParticipants.map(participant => (
+                                    <BracketParticipant key={`bracket_${participant.snakeName}`} participant={participant} isGameCompleted={isGameCompleted} />
+                                ))}
+                            </tbody>
+                        </table>
+                    </Flex>
                 </Board>
             </Dialog.Content>
         </Dialog.Root>
@@ -106,9 +104,7 @@ const BracketMatch: FC<IBracketMatch> = ({ game, heading }) => {
 
 export default function Brackets() {
     const stage = useTournamentStore(store => store.stage)
-    const setStage = useTournamentStore(store => store.setStage)
     const games = useTournamentStore(store => store.games)
-    const setGames = useTournamentStore(store => store.setGames)
 
     return (
         <Box className='brackets'>
@@ -116,7 +112,7 @@ export default function Brackets() {
                 <section className="bracket">
                     <h3 className="bracket__heading">Групповая стадия - Тройки</h3>
                     {
-                        games.threes.map((game, ix) => (
+                        games.filter(game => game.stage === Stage.GROUP_THREES).map((game, ix) => (
                             <BracketMatch key={`bracket_three__${game.id}`} game={game} heading={`Игра #${ix + 1} (поле ${Object.values(game.field).join('x')})`} />
                         ))
                     }
@@ -124,7 +120,7 @@ export default function Brackets() {
                 <section className="bracket">
                     <h3 className="bracket__heading">Групповая стадия - Квинты</h3>
                     {
-                        games.fives.map((game, ix) => (
+                        games.filter(game => game.stage === Stage.GROUP_FIVES).map((game, ix) => (
                             <BracketMatch key={`bracket_five__${game.id}`} game={game} heading={`Игра #${ix + 1} (поле ${Object.values(game.field).join('x')})`} />
                         ))
                     }
@@ -133,7 +129,7 @@ export default function Brackets() {
                     <section className="bracket">
                         <h3 className="bracket__heading">Суперфинал</h3>
                         {
-                            games.finals.map((game, ix) => (
+                            games.filter(game => game.stage === Stage.FINALS).map((game, ix) => (
                                 <BracketMatch key={`bracket_final__${game.id}`} game={game} heading={`Игра #${ix + 1} (поле ${Object.values(game.field).join('x')})`} />
                             ))
                         }

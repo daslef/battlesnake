@@ -7,7 +7,7 @@ import pythonSvg from '../../assets/logos/python.svg'
 import csharpSvg from '../../assets/logos/csharp.svg'
 
 import { k_combinations } from '../'
-import { TournamentStore, Stage, Language, GameStatus } from '../types'
+import { TournamentStore, Stage, Language, GameStatus, Game, Snake } from '../types'
 
 const useTournamentStore = create<TournamentStore>()(
   devtools(
@@ -19,11 +19,7 @@ const useTournamentStore = create<TournamentStore>()(
         { width: 11, height: 11 },
         { width: 19, height: 19 }
       ],
-      games: {
-        threes: [],
-        fives: [],
-        finals: []
-      },
+      games: [],
       participants: [
         {
           snakeName: 'yaro-snake',
@@ -46,6 +42,13 @@ const useTournamentStore = create<TournamentStore>()(
           snakeAuthor: 'Гость',
           language: Language.CSharp,
           languageIcon: csharpSvg
+        },
+        {
+          snakeName: 'another-snake',
+          snakeUrl: new URL('/', 'http://localhost:9005'),
+          snakeAuthor: 'Anothers',
+          language: Language.Python,
+          languageIcon: pythonSvg
         },
         {
           snakeName: 'puppies-snake',
@@ -73,6 +76,67 @@ const useTournamentStore = create<TournamentStore>()(
         })
       },
 
+      setGameResult: (game, frames) => {
+        const firstPlaceSnakeName =
+          frames.at(-1)?.snakes.find((participant) => !participant.isEliminated)?.name ?? null
+        const firstPlaceParticipant =
+          game.gameParticipants.find(
+            (participant) => participant.snakeName === firstPlaceSnakeName
+          ) ?? null
+
+        const lastFrameWithTwoSnakes = frames
+          .toReversed()
+          .find((frame) => frame.snakes.filter((snake) => !snake.isEliminated).length === 2)
+
+        const secondPlaceSnakeName =
+          lastFrameWithTwoSnakes?.snakes.filter(
+            (participant) => !participant.isEliminated && participant.name !== firstPlaceSnakeName
+          )[0]?.name ?? null
+
+        const secondPlaceParticipant =
+          game.gameParticipants.find(
+            (participant) => participant.snakeName === secondPlaceSnakeName
+          ) ?? null
+
+        set((state) => {
+          const gameIndex = state.games.findIndex((el) => el.id === game.id)
+
+          if (gameIndex === -1) {
+            return state
+          }
+
+          const updatedGame = {
+            ...state.games[gameIndex],
+            result: {
+              firstPlace: firstPlaceParticipant,
+              secondPlace: secondPlaceParticipant,
+              aggressiveBonus: null
+            }
+          }
+
+          return {
+            games: [
+              ...state.games.slice(0, gameIndex),
+              updatedGame,
+              ...state.games.slice(gameIndex + 1)
+            ]
+          }
+        })
+      },
+
+      setGameStatus: (game: Game, status: GameStatus) => {
+        set((state) => {
+          const gameIndex = state.games.findIndex((el) => el.id === game.id)
+          return {
+            games: [
+              ...state.games.slice(0, gameIndex),
+              { ...state.games[gameIndex], status },
+              ...state.games.slice(gameIndex + 1)
+            ]
+          }
+        })
+      },
+
       calculateTotalScore: (participant) => {
         const participantScores = get().score.get(participant)
 
@@ -88,13 +152,16 @@ const useTournamentStore = create<TournamentStore>()(
         new Map(Object.entries(get().score).toSorted((a, b) => b[1].result - a[1].result)),
 
       setGames: () => {
-        if (get().stage === Stage.GROUP) {
+        if (get().stage === Stage.GROUP_THREES) {
           set((state) => {
-            const combs = k_combinations(state.participants, 3).toSorted(() => Math.random() - 0.5)
-            const groupGames = { ...state.games }
+            const combs_three = k_combinations(state.participants, 3).toSorted(
+              () => Math.random() - 0.5
+            )
 
-            for (const comb of combs) {
-              groupGames.threes.push({
+            const groupGames = []
+
+            for (const comb of combs_three) {
+              groupGames.push({
                 id: Date.now().toString() + Math.random().toString(),
                 stage: state.stage,
                 field: { width: 8, height: 8 },
@@ -103,15 +170,27 @@ const useTournamentStore = create<TournamentStore>()(
               })
             }
 
+            return { games: groupGames }
+          })
+        } else if (get().stage === Stage.GROUP_FIVES) {
+          set((state) => {
+            const combs_fives = k_combinations(state.participants, 5).toSorted(
+              () => Math.random() - 0.5
+            )
+
+            const groupGames = [...state.games]
+
             // fives from last commit
-            for (const comb of combs) {
-              groupGames.fives.push({
-                id: Date.now().toString() + Math.random().toString(),
-                stage: state.stage,
-                field: { width: 11, height: 11 },
-                status: GameStatus.NOT_PLAYED,
-                gameParticipants: comb
-              })
+            for (const comb of combs_fives) {
+              for (const _ of Array(5)) {
+                groupGames.push({
+                  id: Date.now().toString() + Math.random().toString(),
+                  stage: state.stage,
+                  field: { width: 11, height: 11 },
+                  status: GameStatus.NOT_PLAYED,
+                  gameParticipants: comb
+                })
+              }
             }
 
             return { games: groupGames }
@@ -131,7 +210,7 @@ const useTournamentStore = create<TournamentStore>()(
               }
             }
 
-            return { games: { ...state.games, finals: finalMatches } }
+            return { games: { ...state.games, finalMatches } }
           })
         }
       },
@@ -149,12 +228,12 @@ const useTournamentStore = create<TournamentStore>()(
         })),
 
       initialize: () => {
-        get().setStage(Stage.GROUP)
+        get().setStage(Stage.GROUP_THREES)
         get().setGames()
       }
     }),
     {
-      name: 'playback-storage'
+      name: 'tournament-storage'
     }
   )
   // )

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { Box } from '@radix-ui/themes'
 
-import { type SvgCalcParams, PlaybackMode, Elimination } from '../lib/types'
+import { type SvgCalcParams, PlaybackMode, Elimination, Stage, Game, GameStatus } from '../lib/types'
 
 import { SvgSnake } from './svg/SvgSnake'
 import { SvgFood } from './svg/SvgFood'
@@ -16,6 +16,7 @@ import iconLast from '../assets/icons/chevron-right-double.svg'
 
 import { usePlaybackStore } from '../lib/stores/playback'
 import { useSettingsStore } from '../lib/stores/settings'
+import { useTournamentStore } from '../lib/stores/tournament'
 
 function GameScore() {
   function snakeIdToName(id: string) {
@@ -56,14 +57,10 @@ function GameScore() {
         return a.name.toLowerCase().localeCompare(b.name.toLowerCase())
       }) : []
 
-  // if (!currentFrame) {
-  //   return <Box className="gamescore">loading...</Box>
-  // }
-
   return (
     <Box className="gamescore">
       <div className="flex flex-row font-bold text-lg">
-        <div className="basis-1/2 text-right">TURN{ }</div>
+        <div className="basis-1/2 text-right">TURN{" "}</div>
         <div className="basis-1/2 pl-2">{currentFrame.turn}</div>
       </div>
 
@@ -74,7 +71,7 @@ function GameScore() {
           key={`gamescore-${snake.id}`}
         >
           <div className="flex flex-row font-bold">
-            <p className="grow">{snake.name}</p>
+            <p className="grow text-sm">{snake.name}</p>
             <p className="ps-4 text-right">{snake.length}</p>
           </div>
           <div className="flex flex-row text-xs">
@@ -183,7 +180,7 @@ function Gameboard() {
   const currentFrame = frames[currentFrameIndex]
 
   if (!currentFrame) {
-    return <p>loading...</p>
+    return <></>
   }
 
   return (
@@ -209,12 +206,20 @@ function Gameboard() {
   )
 }
 
-export default function Board({ children }: { children: React.ReactNode }) {
+export default function Board({ game, children }: { game: Game, children: React.ReactNode }) {
   const settings = useSettingsStore()
   const playback = usePlaybackStore()
+  const tournament = useTournamentStore()
 
   if (!playback.frames.length) {
-    return <Box>loading...</Box>
+    return (
+      <img src="/spinner.jfif" alt="logo" className='dialog__spinner' />
+    )
+  }
+
+  if (playback.frames.at(-1)?.isFinalFrame && game.status !== GameStatus.COMPLETED) {
+    tournament.setGameResult(game, playback.frames)
+    tournament.setGameStatus(game, GameStatus.COMPLETED)
   }
 
   return (

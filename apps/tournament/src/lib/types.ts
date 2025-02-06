@@ -1,6 +1,7 @@
 export enum Stage {
   NOT_SET,
-  GROUP,
+  GROUP_THREES,
+  GROUP_FIVES,
   FINALS
 }
 
@@ -32,8 +33,8 @@ export type Field = {
 }
 
 export type GameResult = {
-  firstPlace: Participant
-  secondPlace: Participant
+  firstPlace: Participant | null
+  secondPlace: Participant | null
   aggressiveBonus: Participant | null
 }
 
@@ -53,22 +54,18 @@ export type Score = {
   total: number
 }
 
-export type Games = {
-  threes: Game[]
-  fives: Game[]
-  finals: Game[]
-}
-
 export interface TournamentStore {
   stage: Stage
   fields: Field[]
-  games: Games
+  games: Game[]
   participants: Participant[]
 
   score: Map<Participant, Score>
   addToScore: (participant: Participant, scoreType: keyof Score) => void
   calculateTotalScore: (participant: Participant) => number
   getSortedScore: () => Map<Participant, Score>
+  setGameResult: (game: Game, frames: Frame[]) => void
+  setGameStatus: (game: Game, status: GameStatus) => void
   initializeScore: () => void
 
   setGames: () => void

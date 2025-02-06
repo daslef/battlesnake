@@ -24,6 +24,7 @@
   padding: 0;
   line-height: 100%;
   font-size: 0.8rem;
+  user-select: none;
 }
 
 .app {
@@ -60,6 +61,19 @@ svg.gameboard .snake {
 
 .text-outline {
   text-shadow: 0 0 2px black, 0 0 2px black, 0 0 2px black, 0 0 2px black;
+}
+
+.dialog {
+  min-height: calc(80vw * 9 / 16);
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  background-color: #f7f7f7 !important;
+}
+
+.dialog__spinner {
+  transform: scale(0.5);
+  transition: all 0.5s ease-in;
 }
 
 .eliminated {
@@ -117,6 +131,9 @@ svg.gameboard .snake {
 }
 
 .bracket__heading {
+  font-size: 1.2rem;
+  font-weight: 500;
+  text-align: center;
 }
 
 .match,
