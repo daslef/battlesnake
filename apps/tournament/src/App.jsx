@@ -1,42 +1,24 @@
-import { useState, useEffect, useMemo } from 'react'
-import { Box, Container, Flex } from '@radix-ui/themes'
+import { useEffect } from 'react'
+import { Flex } from '@radix-ui/themes'
 
 import Leaderboard from './components/Leaderboard'
 import Brackets from './components/Brackets'
 
-import { teamNames } from './data'
+import { useTournamentStore } from './lib/stores/tournament'
 
 function App() {
-  const [score, setScore] = useState(() => {
-    const initialScore = {
-      gold: 0, silver: 0, bonus: 0, result: 0
-    }
-
-    return teamNames.reduce((acc, team) => {
-      return { ...acc, [team]: { ...initialScore } }
-    }, {})
-  })
-
-  const sortedScore = useMemo(() => {
-    return Object.fromEntries(Object.entries(score).toSorted((a, b) => b[1].result - a[1].result))
-  }, [JSON.stringify(score)])
-
+  const initialize = useTournamentStore(store => store.initialize)
+  const initializeScore = useTournamentStore(store => store.initializeScore)
   useEffect(() => {
-    setScore(score => {
-      const newScore = { ...score }
-      for (const team of teamNames) {
-        const { gold, silver, bonus } = score?.[team]
-        newScore[team].result = gold * 2 + silver * 1 + bonus * 0.001
-      }
-      return newScore
-    })
-
-  }, [JSON.stringify(score)])
+    initialize()
+    initializeScore()
+    // return () => { } to unset ? 
+  }, [])
 
   return (
-    <Flex style={{ background: "var(--gray-1)", justifyContent: "center", gap: "2vh", padding: "20px", alignItems: "flex-start" }}>
-      <Leaderboard score={sortedScore} />
-      <Brackets teamNames={teamNames} setScore={setScore} sortedScore={sortedScore} />
+    <Flex style={{ justifyContent: "center", gap: "2vh", padding: "20px", alignItems: "flex-start" }}>
+      <Leaderboard />
+      <Brackets />
     </Flex>
   )
 }

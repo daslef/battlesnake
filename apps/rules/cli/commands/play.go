@@ -35,7 +35,6 @@ type SnakeState struct {
 	Head       string
 	Tail       string
 	Author     string
-	Version    string
 	Error      error
 	StatusCode int
 	Latency    time.Duration

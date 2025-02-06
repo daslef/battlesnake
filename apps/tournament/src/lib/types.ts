@@ -1,3 +1,80 @@
+export enum Stage {
+  NOT_SET,
+  GROUP,
+  FINALS
+}
+
+export enum Language {
+  CSharp,
+  Python,
+  JavaScript
+}
+
+export type Participant = {
+  snakeName: string
+  snakeUrl: URL
+  snakeAuthor: string
+  language: Language
+  languageIcon: string
+  photo?: URL
+}
+
+export enum GameStatus {
+  NOT_PLAYED,
+  IN_PROGRESS,
+  COMPLETED,
+  ERROR
+}
+
+export type Field = {
+  width: number
+  height: number
+}
+
+export type GameResult = {
+  firstPlace: Participant
+  secondPlace: Participant
+  aggressiveBonus: Participant | null
+}
+
+export type Game = {
+  id: string
+  stage: Stage
+  field: Field
+  status: GameStatus
+  gameParticipants: Participant[]
+  result?: GameResult
+}
+
+export type Score = {
+  firstPlaces: number
+  secondPlaces: number
+  aggressiveBonuses: number
+  total: number
+}
+
+export type Games = {
+  threes: Game[]
+  fives: Game[]
+  finals: Game[]
+}
+
+export interface TournamentStore {
+  stage: Stage
+  fields: Field[]
+  games: Games
+  participants: Participant[]
+
+  score: Map<Participant, Score>
+  addToScore: (participant: Participant, scoreType: keyof Score) => void
+  calculateTotalScore: (participant: Participant) => number
+  getSortedScore: () => Map<Participant, Score>
+  initializeScore: () => void
+
+  setGames: () => void
+  setStage: (stage: Stage) => void
+}
+
 export type SvgCalcParams = {
   cellSize: number
   cellSizeHalf: number
@@ -42,6 +119,11 @@ export type Elimination = {
   turn: number
   cause: string
   by: string
+}
+
+export type GameServerObject = {
+  snakes: { snakeUrl: string; snakeName: string }[]
+  field: Field
 }
 
 export type EnginePoint = { X: number; Y: number }

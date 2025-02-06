@@ -263,7 +263,6 @@ func TestBuildFrameEvent(t *testing.T) {
 					Head:       "silly",
 					Tail:       "default",
 					Author:     "AUTHOR",
-					Version:    "1.5",
 					Error:      nil,
 					StatusCode: 200,
 					Latency:    54 * time.Millisecond,

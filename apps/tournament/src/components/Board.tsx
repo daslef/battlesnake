@@ -56,14 +56,14 @@ function GameScore() {
         return a.name.toLowerCase().localeCompare(b.name.toLowerCase())
       }) : []
 
-  if (!currentFrame) {
-    return <p>loading...</p>
-  }
+  // if (!currentFrame) {
+  //   return <Box className="gamescore">loading...</Box>
+  // }
 
   return (
     <Box className="gamescore">
       <div className="flex flex-row font-bold text-lg">
-        <div className="basis-1/2 text-right">TURN</div>
+        <div className="basis-1/2 text-right">TURN{ }</div>
         <div className="basis-1/2 pl-2">{currentFrame.turn}</div>
       </div>
 
@@ -214,7 +214,7 @@ export default function Board({ children }: { children: React.ReactNode }) {
   const playback = usePlaybackStore()
 
   if (!playback.frames.length) {
-    return <p className="p-4 text-lg text-center">Loading game...</p>
+    return <Box>loading...</Box>
   }
 
   return (

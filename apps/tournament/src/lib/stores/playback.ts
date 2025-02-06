@@ -4,7 +4,7 @@ import type {} from '@redux-devtools/extension'
 
 import { loadGameInfo, setWs } from '../loaders/loadGame'
 import { startPlayback, stopPlayback } from '../playback/animation'
-import { engineEventToFrame, type Frame, PlaybackMode } from '../types'
+import { engineEventToFrame, type Frame, PlaybackMode, type GameServerObject, Game } from '../types'
 
 interface PlaybackStore {
   loadedFrames: Set<Frame>
@@ -15,6 +15,7 @@ interface PlaybackStore {
   isLoading: boolean
   title: string
   load: (engineURL: string) => void
+  sendGameInfo: (gameObject: Game) => Promise<GameServerObject>
   reset: () => void
   setCurrentFrame: (index: number) => void
   setMode: (mode: PlaybackMode) => void
@@ -89,6 +90,21 @@ const usePlaybackStore = create<PlaybackStore>()(
           console.error(error)
           set(() => ({ playbackError: (error as Error).message, isLoading: false }))
         }
+      },
+      sendGameInfo: async (game: Game) => {
+        fetch('http://localhost:5001/new', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            snakes: game.gameParticipants.map(({ snakeName, snakeUrl }) => ({
+              snakeName,
+              snakeUrl
+            })),
+            field: game.field
+          })
+        })
       },
       reset: () => {
         set(() => ({

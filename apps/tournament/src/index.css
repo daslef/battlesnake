@@ -80,7 +80,7 @@ svg.gameboard .snake {
 }
 
 .brackets {
-  /* flex: 1 0 auto; */
+  min-height: calc(100vh - 30px - 20px);
   max-height: calc(100vh - 30px - 20px);
 }
 
@@ -100,7 +100,6 @@ svg.gameboard .snake {
   scrollbar-color: #26355d transparent;
   scrollbar-width: none;
   scrollbar-gutter: stable;
-  padding: 10px 0 20px;
 }
 
 .bracket {
@@ -127,7 +126,7 @@ svg.gameboard .snake {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow: 0 0 3px 2px #682f5457;
+  box-shadow: 0 0 3px 2px #682f5417;
   border-radius: 10px;
 }
 
@@ -142,6 +141,7 @@ svg.gameboard .snake {
 }
 
 .match__heading {
+  padding: 8px 0 12px;
 }
 
 .participant,
@@ -212,7 +212,6 @@ svg.gameboard .snake {
 }
 
 .gamescore {
-  box-shadow: 0 0 3px 2px #682f5457;
 }
 
 .leaderboard__content {
@@ -252,6 +251,7 @@ svg.gameboard .snake {
 
 .participant__score {
   display: flex;
+  gap: 4px;
   place-items: center;
   position: relative;
   color: #26355d;
