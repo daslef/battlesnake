@@ -5,7 +5,7 @@ import React from "react";
 export default function NotFound() {
 	return (
 		<>
-			<PageMetadata
+			{/* <PageMetadata
 				title={translate({
 					id: "theme.NotFound.title",
 					message: "Page Not Found",
@@ -33,7 +33,7 @@ export default function NotFound() {
 						</div>
 					</div>
 				</main>
-			</Layout>
+			</Layout> */}
 		</>
 	);
 }
