@@ -8,14 +8,12 @@ import { themes as prismThemes } from "prism-react-renderer";
 const config = {
 	title: "Battlesnake",
 	tagline: "Мультиплеерная игра, где соревнуются игровые модели",
-	url: "https://docs.battlesnake.com",
-	baseUrl: "/",
+	url: "https://snakes.saint-hubs.tech/",
+	baseUrl: "/docs/",
 	favicon: "img/favicon.ico",
 
-	// GitHub pages deployment config.
-	// If you aren't using GitHub pages, you don't need these.
-	organizationName: "BattlesnakeOfficial", // Usually your GitHub org/user name.
-	projectName: "docs", // Usually your repo name.
+	organizationName: "IThub Spb", // Usually your GitHub org/user name.
+	projectName: "docs",
 	trailingSlash: false,
 
 	i18n: {
