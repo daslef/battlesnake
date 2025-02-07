@@ -1,0 +1,49 @@
+.toggle {
+	--width: 3rem;
+	--height: 1.5rem;
+	--border-radius: calc(var(--height) / 2);
+	--color-inactive: #949494;
+	--color-active: #814afe;
+
+	display: inline-flex;
+	align-items: center;
+	gap: 1.5rem;
+
+	cursor: pointer;
+
+	font-weight: 500;
+	color: white;
+	line-height: 2.265rem;
+	font-family: inherit;
+}
+
+.toggle__input {
+	display: none;
+}
+
+.toggle__fill {
+	position: relative;
+	width: var(--width);
+	height: var(--height);
+	border-radius: var(--border-radius);
+	background: white;
+	transition: background 0.2s;
+}
+
+.toggle__fill::after {
+	content: "";
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	height: calc(var(--height) - 4px);
+	width: calc(var(--height) - 4px);
+	background: var(--color-inactive);
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+	border-radius: var(--border-radius);
+	transition: transform 0.2s;
+}
+
+.toggle__input:checked ~ .toggle__fill::after {
+	transform: translateX(calc(var(--height)));
+	background-color: var(--color-active);
+}
