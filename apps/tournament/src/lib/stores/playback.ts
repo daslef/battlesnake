@@ -15,7 +15,6 @@ interface PlaybackStore {
   isLoading: boolean
   title: string
   load: (engineURL: string) => void
-  sendGameInfo: (gameObject: Game) => Promise<GameServerObject>
   reset: () => void
   setCurrentFrame: (index: number) => void
   setMode: (mode: PlaybackMode) => void
@@ -39,7 +38,7 @@ const usePlaybackStore = create<PlaybackStore>()(
       currentFrameIndex: 0,
       playbackError: null,
       title: '',
-      mode: PlaybackMode.NEW,
+      mode: PlaybackMode.PAUSED,
       setFrames: (frames: Frame[]) => set({ frames }),
       load: async (engineURL) => {
         get().reset()
@@ -61,7 +60,6 @@ const usePlaybackStore = create<PlaybackStore>()(
             if (engineEvent.Type == 'game_end') {
               console.debug('[playback] received final frame')
               get().frames[get().frames.length - 1].isFinalFrame = true
-              get().setMode(PlaybackMode.FINISHED)
             } else if (
               engineEvent.Type == 'frame' &&
               !get().loadedFrames.has(engineEvent.Data.Turn)
@@ -78,7 +76,7 @@ const usePlaybackStore = create<PlaybackStore>()(
                   currentFrameIndex: frame.turn,
                   frame: frame,
                   isLoading: false,
-                  mode: PlaybackMode.READY
+                  mode: PlaybackMode.PAUSED
                 }))
               }
             }
@@ -92,28 +90,13 @@ const usePlaybackStore = create<PlaybackStore>()(
           set(() => ({ playbackError: (error as Error).message, isLoading: false }))
         }
       },
-      sendGameInfo: async (game: Game) => {
-        fetch('http://localhost:5001/new', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            snakes: game.gameParticipants.map(({ snakeName, snakeUrl }) => ({
-              snakeName,
-              snakeUrl
-            })),
-            field: game.field
-          })
-        })
-      },
       reset: () => {
         set(() => ({
           frames: [],
           loadedFrames: new Set(),
           currentFrameIndex: 0,
           playbackError: null,
-          mode: PlaybackMode.NEW,
+          mode: PlaybackMode.PAUSED,
           isLoading: false,
           title: ''
         }))
@@ -128,7 +111,7 @@ const usePlaybackStore = create<PlaybackStore>()(
           get().mode == PlaybackMode.PLAYING
         ) {
           stopPlayback()
-          get().setMode(PlaybackMode.FINISHED)
+          get().setMode(PlaybackMode.PAUSED) // TODO?
         }
       },
       setMode: (mode) => {
@@ -161,7 +144,7 @@ const usePlaybackStore = create<PlaybackStore>()(
       },
       play: () => {
         const fps = 10
-        if (![PlaybackMode.PAUSED, PlaybackMode.READY].includes(get().mode)) {
+        if (get().mode === PlaybackMode.PLAYING) {
           return
         }
         startPlayback(fps, () => {
@@ -174,7 +157,7 @@ const usePlaybackStore = create<PlaybackStore>()(
         get().setMode(PlaybackMode.PAUSED)
       },
       togglePlayPause: () => {
-        if ([PlaybackMode.PAUSED, PlaybackMode.READY].includes(get().mode)) {
+        if (get().mode === PlaybackMode.PAUSED) {
           get().play()
         } else if (get().mode == PlaybackMode.PLAYING) {
           get().pause()

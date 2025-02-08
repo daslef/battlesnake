@@ -59,8 +59,6 @@ app.post('/new', { body: schema }, async (request, response) => {
 
     childArgs.push('--width', field.width, '--height', field.height)
 
-    console.log(childArgs)
-
     const child = spawn(pathToExecutable, childArgs)
 
     response.send()

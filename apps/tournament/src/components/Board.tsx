@@ -17,6 +17,7 @@ import iconLast from '../assets/icons/chevron-right-double.svg'
 import { usePlaybackStore } from '../lib/stores/playback'
 import { useSettingsStore } from '../lib/stores/settings'
 import { useTournamentStore } from '../lib/stores/tournament'
+import { useGameStore } from '../lib/stores/game'
 
 function GameScore() {
   function snakeIdToName(id: string) {
@@ -44,8 +45,8 @@ function GameScore() {
     }
   }
 
-  const playback = usePlaybackStore()
-  const currentFrame = playback.frames[playback.currentFrameIndex]
+  const playbackStore = usePlaybackStore()
+  const currentFrame = playbackStore.frames[playbackStore.currentFrameIndex]
 
   // We sort snakes by elimination state, then lowercase name alphabetical
   const sortedSnakes =
@@ -206,20 +207,20 @@ function Gameboard() {
   )
 }
 
-export default function Board({ game, children }: { game: Game, children: React.ReactNode }) {
+export default function Board({ children }: { children: React.ReactNode }) {
   const settings = useSettingsStore()
-  const playback = usePlaybackStore()
-  const tournament = useTournamentStore()
+  const playbackStore = usePlaybackStore()
+  const gameStore = useGameStore()
 
-  if (!playback.frames.length) {
+  if (!playbackStore.frames.length) {
     return (
       <img src="/spinner.jfif" alt="logo" className='dialog__spinner' />
     )
   }
 
-  if (playback.frames.at(-1)?.isFinalFrame && game.status !== GameStatus.COMPLETED) {
-    tournament.setGameResult(game, playback.frames)
-    tournament.setGameStatus(game, GameStatus.COMPLETED)
+  if (playbackStore.frames.at(-1)?.isFinalFrame && !gameStore.isFinished) {
+    gameStore.setResult()
+    gameStore.setIsFinished()
   }
 
   return (

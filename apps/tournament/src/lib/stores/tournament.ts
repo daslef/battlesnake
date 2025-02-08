@@ -7,7 +7,24 @@ import pythonSvg from '../../assets/logos/python.svg'
 import csharpSvg from '../../assets/logos/csharp.svg'
 
 import { k_combinations } from '../'
-import { TournamentStore, Stage, Language, GameStatus, Game, Snake } from '../types'
+import { Stage, Language, GameStatus, Game, Snake, Field, Participant, Score } from '../types'
+
+interface TournamentStore {
+  stage: Stage
+  fields: Field[]
+  games: Game[]
+  participants: Participant[]
+
+  score: Map<Participant, Score>
+  addToScore: (participant: Participant, scoreType: keyof Score) => void
+
+  updateScore: () => void
+  getSortedScore: () => Map<Participant, Score>
+
+  initializeScore: () => void
+  generateBrackets: () => void
+  setStage: (stage: Stage) => void
+}
 
 const useTournamentStore = create<TournamentStore>()(
   devtools(
@@ -23,36 +40,36 @@ const useTournamentStore = create<TournamentStore>()(
       participants: [
         {
           snakeName: 'yaro-snake',
-          snakeUrl: new URL('/', 'http://localhost:9001'),
+          snakeUrl: new URL('/', 'http://localhost:6001'),
           snakeAuthor: 'Ярослав',
           language: Language.JavaScript,
           languageIcon: jsSvg
         },
         {
           snakeName: 'ri-snake',
-          snakeUrl: new URL('/', 'http://localhost:9002'),
+          snakeUrl: new URL('/', 'http://localhost:6002'),
           snakeAuthor: 'РИ-9',
           language: Language.CSharp,
           languageIcon: csharpSvg,
           photo: new URL('/vite.svg', 'http://localhost:5432')
         },
-        {
-          snakeName: 'guest-snake',
-          snakeUrl: new URL('/', 'https://snapepy.onrender.com'),
-          snakeAuthor: 'Гость',
-          language: Language.CSharp,
-          languageIcon: csharpSvg
-        },
+        // {
+        //   snakeName: 'guest-snake',
+        //   snakeUrl: new URL('/', 'https://snapepy.onrender.com'),
+        //   snakeAuthor: 'Гость',
+        //   language: Language.CSharp,
+        //   languageIcon: csharpSvg
+        // },
         {
           snakeName: 'another-snake',
-          snakeUrl: new URL('/', 'http://localhost:9005'),
+          snakeUrl: new URL('/', 'http://localhost:6003'),
           snakeAuthor: 'Anothers',
           language: Language.Python,
           languageIcon: pythonSvg
         },
         {
           snakeName: 'puppies-snake',
-          snakeUrl: new URL('/', 'http://localhost:9003'),
+          snakeUrl: new URL('/', 'http://localhost:6004'),
           snakeAuthor: 'Щеночки',
           language: Language.JavaScript,
           languageIcon: jsSvg
@@ -76,82 +93,23 @@ const useTournamentStore = create<TournamentStore>()(
         })
       },
 
-      setGameResult: (game, frames) => {
-        const firstPlaceSnakeName =
-          frames.at(-1)?.snakes.find((participant) => !participant.isEliminated)?.name ?? null
-        const firstPlaceParticipant =
-          game.gameParticipants.find(
-            (participant) => participant.snakeName === firstPlaceSnakeName
-          ) ?? null
+      updateScore: () => {
+        function calculateTotalScore(participant: Participant) {
+          const participantScores = get().score.get(participant)
 
-        const lastFrameWithTwoSnakes = frames
-          .toReversed()
-          .find((frame) => frame.snakes.filter((snake) => !snake.isEliminated).length === 2)
-
-        const secondPlaceSnakeName =
-          lastFrameWithTwoSnakes?.snakes.filter(
-            (participant) => !participant.isEliminated && participant.name !== firstPlaceSnakeName
-          )[0]?.name ?? null
-
-        const secondPlaceParticipant =
-          game.gameParticipants.find(
-            (participant) => participant.snakeName === secondPlaceSnakeName
-          ) ?? null
-
-        set((state) => {
-          const gameIndex = state.games.findIndex((el) => el.id === game.id)
-
-          if (gameIndex === -1) {
-            return state
+          if (!participantScores) {
+            throw new Error('Scores not found')
           }
 
-          const updatedGame = {
-            ...state.games[gameIndex],
-            result: {
-              firstPlace: firstPlaceParticipant,
-              secondPlace: secondPlaceParticipant,
-              aggressiveBonus: null
-            }
-          }
-
-          return {
-            games: [
-              ...state.games.slice(0, gameIndex),
-              updatedGame,
-              ...state.games.slice(gameIndex + 1)
-            ]
-          }
-        })
-      },
-
-      setGameStatus: (game: Game, status: GameStatus) => {
-        set((state) => {
-          const gameIndex = state.games.findIndex((el) => el.id === game.id)
-          return {
-            games: [
-              ...state.games.slice(0, gameIndex),
-              { ...state.games[gameIndex], status },
-              ...state.games.slice(gameIndex + 1)
-            ]
-          }
-        })
-      },
-
-      calculateTotalScore: (participant) => {
-        const participantScores = get().score.get(participant)
-
-        if (!participantScores) {
-          throw new Error('Scores not found')
+          const { firstPlaces, secondPlaces, aggressiveBonuses } = participantScores
+          return firstPlaces * 2 + secondPlaces * 1 + aggressiveBonuses * 0.001
         }
-
-        const { firstPlaces, secondPlaces, aggressiveBonuses } = participantScores
-        return firstPlaces * 2 + secondPlaces * 1 + aggressiveBonuses * 0.001
       },
 
       getSortedScore: () =>
         new Map(Object.entries(get().score).toSorted((a, b) => b[1].result - a[1].result)),
 
-      setGames: () => {
+      generateBrackets: () => {
         if (get().stage === Stage.GROUP_THREES) {
           set((state) => {
             const combs_three = k_combinations(state.participants, 3).toSorted(
@@ -229,7 +187,7 @@ const useTournamentStore = create<TournamentStore>()(
 
       initialize: () => {
         get().setStage(Stage.GROUP_THREES)
-        get().setGames()
+        get().generateBrackets()
       }
     }),
     {

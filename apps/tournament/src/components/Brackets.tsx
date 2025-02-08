@@ -4,6 +4,7 @@ import Board from './Board'
 
 import { usePlaybackStore } from '../lib/stores/playback'
 import { useTournamentStore } from '../lib/stores/tournament'
+import { useGameStore } from '../lib/stores/game'
 
 import digitOneSvg from '../assets/icons/digit-one.svg'
 import digitTwoSvg from '../assets/icons/digit-two.svg'
@@ -58,7 +59,7 @@ const BracketParticipant: FC<IBracketParticipant> = ({ participant, isGameComple
 
 const BracketMatch: FC<IBracketMatch> = ({ game, heading }) => {
     const load = usePlaybackStore(store => store.load)
-    const sendGameInfo = usePlaybackStore(store => store.sendGameInfo)
+    const sendGameInfo = useGameStore(store => store.sendGameInfo)
     const isGameCompleted = game.status === GameStatus.COMPLETED
 
     return (
@@ -69,7 +70,7 @@ const BracketMatch: FC<IBracketMatch> = ({ game, heading }) => {
                     <Dialog.Trigger>
                         {isGameCompleted ? <></> : (
                             <Button size={'1'} color='violet' style={{ cursor: "pointer" }} onClick={() => {
-                                sendGameInfo(game).then(() => {
+                                sendGameInfo().then(() => {
                                     load('http://127.0.0.1:5000')
                                 })
                             }} >▶︎</Button>
@@ -85,7 +86,7 @@ const BracketMatch: FC<IBracketMatch> = ({ game, heading }) => {
                 </table>
             </Box>
             <Dialog.Content maxWidth="80vw" style={{ backgroundColor: "var(--gray-4)" }} className='dialog'>
-                <Board game={game}>
+                <Board>
                     <Flex direction={"column"} gap={"2"} mt={'7'}>
                         <Dialog.Title className='text-center'>{heading}</Dialog.Title>
                         <table className="bracket__match match">

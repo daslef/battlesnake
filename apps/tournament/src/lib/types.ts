@@ -39,7 +39,7 @@ export type GameResult = {
 }
 
 export type Game = {
-  id: string
+  id?: string
   stage: Stage
   field: Field
   status: GameStatus
@@ -54,23 +54,6 @@ export type Score = {
   total: number
 }
 
-export interface TournamentStore {
-  stage: Stage
-  fields: Field[]
-  games: Game[]
-  participants: Participant[]
-
-  score: Map<Participant, Score>
-  addToScore: (participant: Participant, scoreType: keyof Score) => void
-  calculateTotalScore: (participant: Participant) => number
-  getSortedScore: () => Map<Participant, Score>
-  setGameResult: (game: Game, frames: Frame[]) => void
-  setGameStatus: (game: Game, status: GameStatus) => void
-  initializeScore: () => void
-
-  setGames: () => void
-  setStage: (stage: Stage) => void
-}
 
 export type SvgCalcParams = {
   cellSize: number
@@ -188,11 +171,8 @@ export type Frame = {
 }
 
 export enum PlaybackMode {
-  NEW,
-  READY,
   PAUSED,
-  PLAYING,
-  FINISHED
+  PLAYING
 }
 
 export function engineEventToFrame(
