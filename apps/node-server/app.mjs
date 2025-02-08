@@ -4,38 +4,7 @@ import { spawn } from 'node:child_process'
 import fastify from 'fastify'
 import fastifyCors from '@fastify/cors'
 
-const schema = {
-    type: 'object',
-    properties: {
-        snakes: {
-            type: 'array',
-            items: {
-                type: 'object',
-                required: ['snakeName', 'snakeUrl'],
-                properties: {
-                    snakeName: {
-                        type: 'string'
-                    },
-                    snakeUrl: {
-                        type: 'string'
-                    }
-                }
-            }
-        },
-        field: {
-            type: 'object',
-            required: ['width', 'height'],
-            properties: {
-                width: {
-                    type: 'number'
-                },
-                height: {
-                    type: 'number'
-                }
-            }
-        }
-    }
-}
+import schema from './schema.mjs'
 
 const pathToExecutable = path.join(import.meta.dirname, '..', 'rules', 'battlesnake.exe')
 
@@ -51,10 +20,7 @@ app.post('/new', { body: schema }, async (request, response) => {
     const { snakes, field } = request.body
 
     for (const snake of snakes) {
-        childArgs.push('--name')
-        childArgs.push(snake.snakeName)
-        childArgs.push('--url')
-        childArgs.push(snake.snakeUrl)
+        childArgs.push('--name', snake.snakeName, '--url', snake.snakeUrl)
     }
 
     childArgs.push('--width', field.width, '--height', field.height)

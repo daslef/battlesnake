@@ -15,13 +15,12 @@ interface TournamentStore {
   games: Game[]
   participants: Participant[]
 
-  score: Map<Participant, Score>
+  score: Record<Participant['snakeName'], Score>
   addToScore: (participant: Participant, scoreType: keyof Score) => void
-
   updateScore: () => void
-  getSortedScore: () => Map<Participant, Score>
+  getSortedScore: () => Record<Participant['snakeName'], Score>
 
-  initializeScore: () => void
+  initialize: () => void
   generateBrackets: () => void
   setStage: (stage: Stage) => void
 }
@@ -80,13 +79,19 @@ const useTournamentStore = create<TournamentStore>()(
 
       addToScore: (participant, scoreType) => {
         set((state) => {
-          const scoreCopy = new Map(state.score)
-          const participantScore = scoreCopy.get(participant)
+          const scoreCopy = { ...state.score }
+          const participantScore = scoreCopy[participant.snakeName]
           if (participantScore) {
-            scoreCopy.set(participant, {
-              ...scoreCopy.get(participant)!,
-              [scoreType]: scoreCopy.get(participant)![scoreType] + 1
-            })
+            scoreCopy[participant.snakeName] = {
+              ...scoreCopy[participant.snakeName],
+              [scoreType]: scoreCopy[participant.snakeName][scoreType] + 1
+            }
+            const { firstPlaces, secondPlaces, aggressiveBonuses } =
+              scoreCopy[participant.snakeName]
+            scoreCopy[participant.snakeName] = {
+              ...scoreCopy[participant.snakeName],
+              total: firstPlaces * 2 + secondPlaces * 1 + aggressiveBonuses * 0.001
+            }
             return { score: scoreCopy }
           }
           return state
@@ -94,20 +99,35 @@ const useTournamentStore = create<TournamentStore>()(
       },
 
       updateScore: () => {
-        function calculateTotalScore(participant: Participant) {
-          const participantScores = get().score.get(participant)
+        set((state) => {
+          const newScore: Record<Participant['snakeName'], Score> = {}
 
-          if (!participantScores) {
-            throw new Error('Scores not found')
+          for (const participant of get().participants) {
+            newScore[participant.snakeName] = {
+              firstPlaces: 0,
+              secondPlaces: 0,
+              aggressiveBonuses: 0,
+              total: 0
+            }
           }
 
-          const { firstPlaces, secondPlaces, aggressiveBonuses } = participantScores
-          return firstPlaces * 2 + secondPlaces * 1 + aggressiveBonuses * 0.001
-        }
+          for (const { result } of state.games.filter((game) => game.result)) {
+            if (result!.firstPlace) newScore[result!.firstPlace.snakeName]!.firstPlaces++
+            if (result?.secondPlace) newScore[result!.secondPlace.snakeName]!.secondPlaces++
+            if (result?.aggressiveBonus)
+              newScore[result!.aggressiveBonus.snakeName]!.aggressiveBonuses++
+          }
+
+          for (const snakeName in newScore) {
+            newScore[snakeName]!.total = calculateTotalScore(snakeName)
+          }
+
+          return { score: newScore }
+        })
       },
 
       getSortedScore: () =>
-        new Map(Object.entries(get().score).toSorted((a, b) => b[1].result - a[1].result)),
+        Object.fromEntries(Object.entries(get().score).toSorted((a, b) => b[1].total - a[1].total)),
 
       generateBrackets: () => {
         if (get().stage === Stage.GROUP_THREES) {
@@ -163,7 +183,7 @@ const useTournamentStore = create<TournamentStore>()(
                   stage: state.stage,
                   field: field,
                   status: GameStatus.NOT_PLAYED,
-                  gameParticipants: [...state.getSortedScore().keys()].slice(0, 2)
+                  gameParticipants: Object.keys(state.getSortedScore()).slice(0, 2)
                 })
               }
             }
@@ -175,19 +195,18 @@ const useTournamentStore = create<TournamentStore>()(
 
       setStage: (stage) => set(() => ({ stage })),
 
-      initializeScore: () =>
-        set((state) => ({
-          score: new Map(
-            state.participants.map((participant) => [
-              participant,
-              { firstPlaces: 0, secondPlaces: 0, aggressiveBonuses: 0, total: 0 }
-            ])
-          )
-        })),
-
       initialize: () => {
         get().setStage(Stage.GROUP_THREES)
         get().generateBrackets()
+
+        set((state) => ({
+          score: Object.fromEntries(
+            state.participants.map((participant) => [
+              participant.snakeName,
+              { firstPlaces: 0, secondPlaces: 0, aggressiveBonuses: 0, total: 0 }
+            ])
+          )
+        }))
       }
     }),
     {

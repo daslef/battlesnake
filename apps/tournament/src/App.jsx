@@ -8,10 +8,9 @@ import { useTournamentStore } from './lib/stores/tournament'
 
 function App() {
   const initialize = useTournamentStore(store => store.initialize)
-  const initializeScore = useTournamentStore(store => store.initializeScore)
+
   useEffect(() => {
     initialize()
-    initializeScore()
     // return () => { } to unset ? 
   }, [])
 

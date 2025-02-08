@@ -175,38 +175,3 @@ export enum PlaybackMode {
   PLAYING
 }
 
-export function engineEventToFrame(
-  engineGameInfo: EngineGameInfo,
-  engineGameEvent: EngineGameEvent
-): Frame {
-  return {
-    turn: engineGameEvent.Turn,
-    width: engineGameInfo.Game.Width,
-    height: engineGameInfo.Game.Height,
-    snakes: engineGameEvent.Snakes.map((engineSnake: EngineSnake) => ({
-      // Fixed properties
-      id: engineSnake.ID,
-      name: engineSnake.Name,
-      author: engineSnake.Author,
-      color: engineSnake.Color,
-      head: engineSnake.HeadType,
-      tail: engineSnake.TailType,
-      // Frame specific
-      health: engineSnake.Health,
-      latency: engineSnake.Latency,
-      body: engineSnake.Body.map((engineCoords) => ({ x: engineCoords.X, y: engineCoords.Y })),
-      length: engineSnake.Body.length,
-      elimination: engineSnake.Death
-        ? {
-            turn: engineSnake.Death.Turn,
-            cause: engineSnake.Death.Cause,
-            by: engineSnake.Death.EliminatedBy
-          }
-        : null,
-      // Helpers
-      isEliminated: engineSnake.Death != null
-    })),
-    food: engineGameEvent.Food.map((engineCoords) => ({ x: engineCoords.X, y: engineCoords.Y })),
-    isFinalFrame: false
-  }
-}

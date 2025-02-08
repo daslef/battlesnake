@@ -1,7 +1,14 @@
 import React, { useEffect } from 'react'
 import { Box } from '@radix-ui/themes'
 
-import { type SvgCalcParams, PlaybackMode, Elimination, Stage, Game, GameStatus } from '../lib/types'
+import {
+  type SvgCalcParams,
+  PlaybackMode,
+  Elimination,
+  Stage,
+  Game,
+  GameStatus
+} from '../lib/types'
 
 import { SvgSnake } from './svg/SvgSnake'
 import { SvgFood } from './svg/SvgFood'
@@ -17,7 +24,6 @@ import iconLast from '../assets/icons/chevron-right-double.svg'
 import { usePlaybackStore } from '../lib/stores/playback'
 import { useSettingsStore } from '../lib/stores/settings'
 import { useTournamentStore } from '../lib/stores/tournament'
-import { useGameStore } from '../lib/stores/game'
 
 function GameScore() {
   function snakeIdToName(id: string) {
@@ -49,19 +55,19 @@ function GameScore() {
   const currentFrame = playbackStore.frames[playbackStore.currentFrameIndex]
 
   // We sort snakes by elimination state, then lowercase name alphabetical
-  const sortedSnakes =
-    currentFrame ?
-      [...currentFrame.snakes].sort((a, b) => {
+  const sortedSnakes = currentFrame
+    ? [...currentFrame.snakes].sort((a, b) => {
         if (a.isEliminated != b.isEliminated) {
           return a.isEliminated ? 1 : -1
         }
         return a.name.toLowerCase().localeCompare(b.name.toLowerCase())
-      }) : []
+      })
+    : []
 
   return (
     <Box className="gamescore">
       <div className="flex flex-row font-bold text-lg">
-        <div className="basis-1/2 text-right">TURN{" "}</div>
+        <div className="basis-1/2 text-right">TURN </div>
         <div className="basis-1/2 pl-2">{currentFrame.turn}</div>
       </div>
 
@@ -111,23 +117,23 @@ function PlaybackControls() {
         onClick={playback.firstFrame}
         disabled={disableDuringPlayback}
       >
-        <img src={iconFirst} className='w-8 h-8' />
+        <img src={iconFirst} className="w-8 h-8" />
       </button>
       <button
         className="mx-2 disabled:text-neutral-400"
         onClick={playback.prevFrame}
         disabled={disableDuringPlayback}
       >
-        <img src={iconPrev} className='w-8 h-8' />
+        <img src={iconPrev} className="w-8 h-8" />
       </button>
 
       {playback.mode == PlaybackMode.PLAYING ? (
         <button className="mx-2" onClick={playback.pause}>
-          <img src={iconPause} className='w-8 h-8' />
+          <img src={iconPause} className="w-8 h-8" />
         </button>
       ) : (
         <button className="mx-2" onClick={playback.play}>
-          <img src={iconPlay} className='w-8 h-8' />
+          <img src={iconPlay} className="w-8 h-8" />
         </button>
       )}
       <button
@@ -135,22 +141,22 @@ function PlaybackControls() {
         onClick={playback.nextFrame}
         disabled={disableDuringPlayback}
       >
-        <img src={iconNext} className='w-8 h-8' />
+        <img src={iconNext} className="w-8 h-8" />
       </button>
       <button
         className="mx-2 disabled:text-neutral-400"
         onClick={playback.lastFrame}
         disabled={disableDuringPlayback}
       >
-        <img src={iconLast} className='w-8 h-8' />
+        <img src={iconLast} className="w-8 h-8" />
       </button>
     </div>
   )
 }
 
 function Gameboard() {
-  const frames = usePlaybackStore(state => state.frames)
-  const currentFrameIndex = usePlaybackStore(state => state.currentFrameIndex)
+  const frames = usePlaybackStore((state) => state.frames)
+  const currentFrameIndex = usePlaybackStore((state) => state.currentFrameIndex)
 
   const CELL_SIZE = 20
   const CELL_SIZE_HALF = CELL_SIZE / 2
@@ -159,14 +165,14 @@ function Gameboard() {
 
   const svgWidth = frames.length
     ? 2 * GRID_BORDER +
-    frames[0].width * CELL_SIZE +
-    Math.max(frames[0].width - 1, 0) * CELL_SPACING
+      frames[0].width * CELL_SIZE +
+      Math.max(frames[0].width - 1, 0) * CELL_SPACING
     : 0
 
   const svgHeight = frames.length
     ? 2 * GRID_BORDER +
-    frames[0].height * CELL_SIZE +
-    Math.max(frames[0].height - 1, 0) * CELL_SPACING
+      frames[0].height * CELL_SIZE +
+      Math.max(frames[0].height - 1, 0) * CELL_SPACING
     : 0
 
   const svgCalcParams = {
@@ -194,11 +200,15 @@ function Gameboard() {
 
       {currentFrame.snakes
         .filter((snake) => snake.isEliminated)
-        .map((snake) => <SvgSnake key={snake.id} snake={snake} svgCalcParams={svgCalcParams} opacity={0.1} />)}
+        .map((snake) => (
+          <SvgSnake key={snake.id} snake={snake} svgCalcParams={svgCalcParams} opacity={0.1} />
+        ))}
 
       {currentFrame.snakes
         .filter((snake) => !snake.isEliminated)
-        .map((snake) => <SvgSnake key={snake.id} snake={snake} svgCalcParams={svgCalcParams} />)}
+        .map((snake) => (
+          <SvgSnake key={snake.id} snake={snake} svgCalcParams={svgCalcParams} />
+        ))}
 
       {currentFrame.food.map((foodElement, index) => (
         <SvgFood point={foodElement} key={`food-${index}`} svgCalcParams={svgCalcParams} />
@@ -207,20 +217,12 @@ function Gameboard() {
   )
 }
 
-export default function Board({ children }: { children: React.ReactNode }) {
+export default function Board() {
   const settings = useSettingsStore()
   const playbackStore = usePlaybackStore()
-  const gameStore = useGameStore()
 
   if (!playbackStore.frames.length) {
-    return (
-      <img src="/spinner.jfif" alt="logo" className='dialog__spinner' />
-    )
-  }
-
-  if (playbackStore.frames.at(-1)?.isFinalFrame && !gameStore.isFinished) {
-    gameStore.setResult()
-    gameStore.setIsFinished()
+    return <img src="/spinner.jfif" alt="logo" className="dialog__spinner" />
   }
 
   return (
@@ -233,9 +235,6 @@ export default function Board({ children }: { children: React.ReactNode }) {
       </div>
       {settings.showScoreboard && (
         <div className="basis-full md:basis-[45%] order-first p-2 md:order-last gap-8 pt-2 flex flex-col">
-          <Box>
-            {children}
-          </Box>
           <GameScore />
         </div>
       )}
