@@ -25,7 +25,7 @@ import { usePlaybackStore } from '../lib/stores/playback'
 import { useSettingsStore } from '../lib/stores/settings'
 import { useTournamentStore } from '../lib/stores/tournament'
 
-function GameScore() {
+function GameScore({ game }: { game: Game }) {
   function snakeIdToName(id: string) {
     for (let i = 0; i < currentFrame.snakes.length; i++) {
       if (currentFrame.snakes[i].id == id) {
@@ -37,15 +37,15 @@ function GameScore() {
   function eliminationToString(elimination: Elimination) {
     switch (elimination.cause) {
       case 'snake-collision':
-        return `Collided with body of ${snakeIdToName(elimination.by)} on Turn ${elimination.turn}`
+        return `Въехал в тело ${snakeIdToName(elimination.by)} на шаге ${elimination.turn}`
       case 'snake-self-collision':
-        return `Collided with itself on Turn ${elimination.turn}`
+        return `Запутался в себе на шаге ${elimination.turn}`
       case 'out-of-health':
-        return `Ran out of health on Turn ${elimination.turn}`
+        return `Истощился на шаге ${elimination.turn}`
       case 'head-collision':
-        return `Lost head-to-head with ${snakeIdToName(elimination.by)} on Turn ${elimination.turn}`
+        return `Столкнулся в лобовую с ${snakeIdToName(elimination.by)} на шаге ${elimination.turn}`
       case 'wall-collision':
-        return `Moved out of bounds on Turn ${elimination.turn}`
+        return `Вышел за границы на шаге ${elimination.turn}`
       default:
         return elimination.cause
     }
@@ -64,44 +64,55 @@ function GameScore() {
       })
     : []
 
+  console.log()
+
   return (
     <Box className="gamescore">
-      <div className="flex flex-row font-bold text-lg">
-        <div className="basis-1/2 text-right">TURN </div>
+      <div className="flex flex-row font-bold text-lg" style={{ padding: 4 }}>
+        <div className="basis-1/2 text-right">&nbsp;</div>
         <div className="basis-1/2 pl-2">{currentFrame.turn}</div>
       </div>
 
-      {sortedSnakes.map((snake) => (
-        <div
-          className={`p-2 cursor-pointer rounded-sm flex flex-col gap-2 ${snake.isEliminated ? 'eliminated' : ''}`}
-          role="presentation"
-          key={`gamescore-${snake.id}`}
-        >
-          <div className="flex flex-row font-bold">
-            <p className="grow text-sm">{snake.name}</p>
-            <p className="ps-4 text-right">{snake.length}</p>
-          </div>
-          <div className="flex flex-row text-xs">
-            <p className="grow truncate">by {snake.author}</p>
-            <p className="text-right">{snake.latency ? `${snake.latency}ms` : ''}</p>
-          </div>
+      <div className="flex flex-col gap-8">
+        {sortedSnakes.map((snake) => (
+          <div
+            className={`p-2 cursor-pointer rounded-sm flex flex-col gap-2 ${snake.isEliminated ? 'eliminated' : ''}`}
+            role="presentation"
+            key={`gamescore-${snake.id}`}
+          >
+            <div className="flex flex-row font-bold">
+              <p className="grow text-lg">{snake.name}</p>
+              <p className="ps-4 text-md text-right">{snake.length}</p>
+            </div>
+            <div className="flex flex-row text-sm justify-between">
+              <p className="text-md">
+                by{' '}
+                {game.gameParticipants?.find((participant) => participant.snakeName === snake.name)
+                  ?.snakeAuthor ?? snake.name}
+              </p>
+              <p className="ml-auto text-right">{snake.latency ? `${snake.latency}ms` : ''}</p>
+            </div>
 
-          <div className="h-4 text-xs mt-1">
-            {snake.elimination ? (
-              <p>{eliminationToString(snake.elimination)}</p>
-            ) : (
-              <div className="text-outline w-full h-full rounded-full bg-neutral-200 dark:bg-neutral-800">
+            <div className="h-4 text-sm mt-1">
+              {snake.elimination ? (
+                <p>{eliminationToString(snake.elimination)}</p>
+              ) : (
                 <div
-                  className="transition-all h-full rounded-full text-white ps-2"
-                  style={{ background: snake.color, width: `${snake.health}%` }}
+                  className="text-outline w-full h-full rounded-full bg-neutral-200 dark:bg-neutral-800"
+                  style={{ height: 'auto' }}
                 >
-                  {snake.health}
+                  <div
+                    className="transition-all h-full rounded-full text-white ps-2 text-sm"
+                    style={{ background: snake.color, width: `${snake.health}%`, padding: 4 }}
+                  >
+                    {snake.health}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </Box>
   )
 }
@@ -117,34 +128,34 @@ function PlaybackControls() {
         onClick={playback.firstFrame}
         disabled={disableDuringPlayback}
       >
-        <img src={iconFirst} className="w-8 h-8" />
+        <img src={iconFirst} className="w-8 h-8 cursor-pointer" />
       </button>
       <button
         className="mx-2 disabled:text-neutral-400"
         onClick={playback.prevFrame}
         disabled={disableDuringPlayback}
       >
-        <img src={iconPrev} className="w-8 h-8" />
+        <img src={iconPrev} className="w-8 h-8 cursor-pointer" />
       </button>
 
       {playback.mode == PlaybackMode.PLAYING ? (
-        <button className="mx-2" onClick={playback.pause}>
+        <button className="mx-2 cursor-pointer" onClick={playback.pause}>
           <img src={iconPause} className="w-8 h-8" />
         </button>
       ) : (
-        <button className="mx-2" onClick={playback.play}>
+        <button className="mx-2 cursor-pointer" onClick={playback.play}>
           <img src={iconPlay} className="w-8 h-8" />
         </button>
       )}
       <button
-        className="mx-2 disabled:text-neutral-400"
+        className="mx-2 disabled:text-neutral-400 cursor-pointer"
         onClick={playback.nextFrame}
         disabled={disableDuringPlayback}
       >
         <img src={iconNext} className="w-8 h-8" />
       </button>
       <button
-        className="mx-2 disabled:text-neutral-400"
+        className="mx-2 disabled:text-neutral-400 cursor-pointer"
         onClick={playback.lastFrame}
         disabled={disableDuringPlayback}
       >
@@ -217,7 +228,7 @@ function Gameboard() {
   )
 }
 
-export default function Board() {
+export default function Board({ game }: { game: Game }) {
   const settings = useSettingsStore()
   const playbackStore = usePlaybackStore()
 
@@ -235,7 +246,7 @@ export default function Board() {
       </div>
       {settings.showScoreboard && (
         <div className="basis-full md:basis-[45%] order-first p-2 md:order-last gap-8 pt-2 flex flex-col">
-          <GameScore />
+          <GameScore game={game} />
         </div>
       )}
     </div>

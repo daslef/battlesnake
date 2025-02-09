@@ -127,7 +127,7 @@ const BracketMatch: FC<IBracketMatch> = ({ game, heading }) => {
         style={{ backgroundColor: 'var(--gray-4)' }}
         className="dialog"
       >
-        <Board></Board>
+        <Board game={game}></Board>
       </Dialog.Content>
     </Dialog.Root>
   )

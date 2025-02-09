@@ -23,9 +23,12 @@
   margin: 0;
   padding: 0;
   line-height: 100%;
-  font-size: 0.8rem;
   user-select: none;
 }
+
+/* :where(*) {
+  font-size: 0.8rem;
+} */
 
 .app {
   padding: 20px;
@@ -229,6 +232,7 @@ svg.gameboard .snake {
 }
 
 .gamescore {
+  box-shadow: none;
 }
 
 .leaderboard__content {
@@ -262,7 +266,7 @@ svg.gameboard .snake {
 }
 
 .participant__team {
-  min-width: 14ch;
+  min-width: 16ch;
   text-align: left;
 }
 
