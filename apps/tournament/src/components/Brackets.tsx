@@ -141,7 +141,7 @@ export default function Brackets() {
     <Box className="brackets">
       <div className="brackets__content">
         <section className="bracket">
-          <h3 className="bracket__heading">Групповая стадия - Тройки</h3>
+          <h3 className="bracket__heading">Тройки</h3>
           {games
             .filter((game) => game.stage === Stage.GROUP_THREES)
             .map((game, ix) => (
@@ -153,7 +153,7 @@ export default function Brackets() {
             ))}
         </section>
         <section className="bracket">
-          <h3 className="bracket__heading">Групповая стадия - Квинты</h3>
+          <h3 className="bracket__heading">Квинты</h3>
           {games
             .filter((game) => game.stage === Stage.GROUP_FIVES)
             .map((game, ix) => (
@@ -164,20 +164,18 @@ export default function Brackets() {
               />
             ))}
         </section>
-        {stage === Stage.FINALS && (
-          <section className="bracket">
-            <h3 className="bracket__heading">Суперфинал</h3>
-            {games
-              .filter((game) => game.stage === Stage.FINALS)
-              .map((game, ix) => (
-                <BracketMatch
-                  key={`bracket_final__${game.id}`}
-                  game={game}
-                  heading={`Игра #${ix + 1} (поле ${Object.values(game.field).join('x')})`}
-                />
-              ))}
-          </section>
-        )}
+        <section className="bracket">
+          <h3 className="bracket__heading">ALL vs ALL</h3>
+          {games
+            .filter((game) => game.stage === Stage.GROUP_ALL)
+            .map((game, ix) => (
+              <BracketMatch
+                key={`bracket_final__${game.id}`}
+                game={game}
+                heading={`Игра #${ix + 1} (поле ${Object.values(game.field).join('x')})`}
+              />
+            ))}
+        </section>
       </div>
     </Box>
   )

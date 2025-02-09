@@ -17,7 +17,6 @@ interface TournamentStore {
 
   score: Record<Participant['snakeName'], Score>
   addToScore: (participant: Participant, scoreType: keyof Score) => void
-  updateScore: () => void
   getSortedScore: () => Record<Participant['snakeName'], Score>
 
   initialize: () => void
@@ -27,110 +26,105 @@ interface TournamentStore {
 
 const useTournamentStore = create<TournamentStore>()(
   devtools(
-    // persist(
-    (set, get) => ({
-      stage: Stage.NOT_SET,
-      fields: [
-        { width: 8, height: 8 },
-        { width: 11, height: 11 },
-        { width: 19, height: 19 }
-      ],
-      games: [],
-      participants: [
-        {
-          snakeName: 'yaro-snake',
-          snakeUrl: new URL('/', 'http://localhost:6001'),
-          snakeAuthor: 'Ярослав',
-          language: Language.JavaScript,
-          languageIcon: jsSvg
-        },
-        {
-          snakeName: 'ri-snake',
-          snakeUrl: new URL('/', 'http://localhost:6002'),
-          snakeAuthor: 'РИ-9',
-          language: Language.CSharp,
-          languageIcon: csharpSvg,
-          photo: new URL('/vite.svg', 'http://localhost:5432')
-        },
-        // {
-        //   snakeName: 'guest-snake',
-        //   snakeUrl: new URL('/', 'https://snapepy.onrender.com'),
-        //   snakeAuthor: 'Гость',
-        //   language: Language.CSharp,
-        //   languageIcon: csharpSvg
-        // },
-        {
-          snakeName: 'another-snake',
-          snakeUrl: new URL('/', 'http://localhost:6003'),
-          snakeAuthor: 'Anothers',
-          language: Language.Python,
-          languageIcon: pythonSvg
-        },
-        {
-          snakeName: 'puppies-snake',
-          snakeUrl: new URL('/', 'http://localhost:6004'),
-          snakeAuthor: 'Щеночки',
-          language: Language.JavaScript,
-          languageIcon: jsSvg
-        }
-      ],
+    persist(
+      (set, get) => ({
+        stage: Stage.NOT_SET,
+        fields: [
+          { width: 8, height: 8 },
+          { width: 15, height: 15 },
+          { width: 25, height: 25 }
+        ],
+        games: [],
+        participants: [
+          {
+            snakeName: '.conCat()',
+            snakeUrl: new URL('/', 'http://10.11.21.177:6001'),
+            snakeAuthor: '.conCat()',
+            language: Language.Python,
+            languageIcon: pythonSvg
+          },
+          {
+            snakeName: 'Пушик',
+            snakeUrl: new URL('/', 'http://10.11.21.177:6002'),
+            snakeAuthor: 'Yarik',
+            language: Language.JavaScript,
+            languageIcon: jsSvg,
+            photo: new URL('/vite.svg', 'http://localhost:5432')
+          },
+          {
+            snakeName: 'camomile-snake',
+            snakeUrl: new URL('/', 'http://10.11.21.177:6003'),
+            snakeAuthor: 'Roman',
+            language: Language.Python,
+            languageIcon: pythonSvg
+          },
+          {
+            snakeName: 'Генадий',
+            snakeUrl: new URL('/', 'http://10.11.21.177:6004'),
+            snakeAuthor: 'YuraPura',
+            language: Language.JavaScript,
+            languageIcon: jsSvg
+          },
+          {
+            snakeName: 'power-shark',
+            snakeUrl: new URL('/', 'http://10.11.21.177:6005'),
+            snakeAuthor: 'NinthAcolite',
+            language: Language.Python,
+            languageIcon: pythonSvg
+          },
+          {
+            snakeName: 'ss',
+            snakeUrl: new URL('/', 'http://10.11.21.177:6006'),
+            snakeAuthor: 'Никита / Марина',
+            language: Language.Python,
+            languageIcon: pythonSvg
+          },
+          {
+            snakeName: 'collequesnake',
+            snakeUrl: new URL('/', 'http://10.11.21.177:6006'),
+            snakeAuthor: 'IT-Colleques',
+            language: Language.Python,
+            languageIcon: pythonSvg
+          }
+        ],
 
-      score: new Map(),
+        score: {},
 
-      addToScore: (participant, scoreType) => {
-        set((state) => {
-          const scoreCopy = { ...state.score }
-          const participantScore = scoreCopy[participant.snakeName]
-          if (participantScore) {
-            scoreCopy[participant.snakeName] = {
-              ...scoreCopy[participant.snakeName],
-              [scoreType]: scoreCopy[participant.snakeName][scoreType] + 1
+        addToScore: (participant, scoreType) => {
+          set((state) => {
+            const stageMultiplier = {
+              [Stage.NOT_SET]: 1,
+              [Stage.GROUP_THREES]: 1,
+              [Stage.GROUP_FIVES]: 1.5,
+              [Stage.GROUP_ALL]: 2
+            }[state.stage]
+
+            const scoreCopy = { ...state.score }
+            const participantScore = scoreCopy[participant.snakeName]
+            if (participantScore) {
+              scoreCopy[participant.snakeName] = {
+                ...scoreCopy[participant.snakeName],
+                [scoreType]:
+                  scoreCopy[participant.snakeName][scoreType] + 1 * (stageMultiplier ?? 1)
+              }
+              const { firstPlaces, secondPlaces, aggressiveBonuses } =
+                scoreCopy[participant.snakeName]
+              scoreCopy[participant.snakeName] = {
+                ...scoreCopy[participant.snakeName],
+                total: firstPlaces * 2 + secondPlaces * 1 + aggressiveBonuses * 0.001
+              }
+              return { score: scoreCopy }
             }
-            const { firstPlaces, secondPlaces, aggressiveBonuses } =
-              scoreCopy[participant.snakeName]
-            scoreCopy[participant.snakeName] = {
-              ...scoreCopy[participant.snakeName],
-              total: firstPlaces * 2 + secondPlaces * 1 + aggressiveBonuses * 0.001
-            }
-            return { score: scoreCopy }
-          }
-          return state
-        })
-      },
+            return state
+          })
+        },
 
-      updateScore: () => {
-        set((state) => {
-          const newScore: Record<Participant['snakeName'], Score> = {}
+        getSortedScore: () =>
+          Object.fromEntries(
+            Object.entries(get().score).toSorted((a, b) => b[1].total - a[1].total)
+          ),
 
-          for (const participant of get().participants) {
-            newScore[participant.snakeName] = {
-              firstPlaces: 0,
-              secondPlaces: 0,
-              aggressiveBonuses: 0,
-              total: 0
-            }
-          }
-
-          for (const { result } of state.games.filter((game) => game.result)) {
-            if (result!.firstPlace) newScore[result!.firstPlace.snakeName]!.firstPlaces++
-            if (result?.secondPlace) newScore[result!.secondPlace.snakeName]!.secondPlaces++
-            if (result?.aggressiveBonus)
-              newScore[result!.aggressiveBonus.snakeName]!.aggressiveBonuses++
-          }
-
-          for (const snakeName in newScore) {
-            newScore[snakeName]!.total = calculateTotalScore(snakeName)
-          }
-
-          return { score: newScore }
-        })
-      },
-
-      getSortedScore: () =>
-        Object.fromEntries(Object.entries(get().score).toSorted((a, b) => b[1].total - a[1].total)),
-
-      generateBrackets: () => {
-        if (get().stage === Stage.GROUP_THREES) {
+        generateBrackets: () => {
           set((state) => {
             const combs_three = k_combinations(state.participants, 3).toSorted(
               () => Math.random() - 0.5
@@ -141,8 +135,8 @@ const useTournamentStore = create<TournamentStore>()(
             for (const comb of combs_three) {
               groupGames.push({
                 id: Date.now().toString() + Math.random().toString(),
-                stage: state.stage,
-                field: { width: 8, height: 8 },
+                stage: Stage.GROUP_THREES,
+                field: state.fields[0],
                 status: GameStatus.NOT_PLAYED,
                 gameParticipants: comb
               })
@@ -150,7 +144,7 @@ const useTournamentStore = create<TournamentStore>()(
 
             return { games: groupGames }
           })
-        } else if (get().stage === Stage.GROUP_FIVES) {
+
           set((state) => {
             const combs_fives = k_combinations(state.participants, 5).toSorted(
               () => Math.random() - 0.5
@@ -158,62 +152,58 @@ const useTournamentStore = create<TournamentStore>()(
 
             const groupGames = [...state.games]
 
-            // fives from last commit
             for (const comb of combs_fives) {
-              for (const _ of Array(5)) {
-                groupGames.push({
-                  id: Date.now().toString() + Math.random().toString(),
-                  stage: state.stage,
-                  field: { width: 11, height: 11 },
-                  status: GameStatus.NOT_PLAYED,
-                  gameParticipants: comb
-                })
-              }
+              groupGames.push({
+                id: Date.now().toString() + Math.random().toString(),
+                stage: Stage.GROUP_FIVES,
+                field: state.fields[1],
+                status: GameStatus.NOT_PLAYED,
+                gameParticipants: comb
+              })
             }
 
             return { games: groupGames }
           })
-        } else if (get().stage === Stage.FINALS) {
+
           set((state) => {
-            const finalMatches = []
-            for (const field of state.fields) {
-              for (let i = 0; i < 3; i++) {
-                finalMatches.push({
-                  id: Date.now().toString() + Math.random().toString(),
-                  stage: state.stage,
-                  field: field,
-                  status: GameStatus.NOT_PLAYED,
-                  gameParticipants: Object.keys(state.getSortedScore()).slice(0, 2)
-                })
-              }
+            const finalMatches = [...state.games]
+            for (let i = 0; i < 10; i++) {
+              finalMatches.push({
+                id: Date.now().toString() + Math.random().toString(),
+                stage: Stage.GROUP_ALL,
+                field: state.fields[2],
+                status: GameStatus.NOT_PLAYED,
+                gameParticipants: state.participants
+              })
             }
 
-            return { games: { ...state.games, finalMatches } }
+            return { games: finalMatches }
           })
+        },
+
+        setStage: (stage) => set(() => ({ stage })),
+
+        initialize: () => {
+          if (!get().games.length) {
+            get().setStage(Stage.GROUP_THREES)
+            get().generateBrackets()
+          }
+
+          set((state) => ({
+            score: Object.fromEntries(
+              state.participants.map((participant) => [
+                participant.snakeName,
+                { firstPlaces: 0, secondPlaces: 0, aggressiveBonuses: 0, total: 0 }
+              ])
+            )
+          }))
         }
-      },
-
-      setStage: (stage) => set(() => ({ stage })),
-
-      initialize: () => {
-        get().setStage(Stage.GROUP_THREES)
-        get().generateBrackets()
-
-        set((state) => ({
-          score: Object.fromEntries(
-            state.participants.map((participant) => [
-              participant.snakeName,
-              { firstPlaces: 0, secondPlaces: 0, aggressiveBonuses: 0, total: 0 }
-            ])
-          )
-        }))
+      }),
+      {
+        name: 'tournament-storage'
       }
-    }),
-    {
-      name: 'tournament-storage'
-    }
+    )
   )
-  // )
 )
 
 export { useTournamentStore }

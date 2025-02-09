@@ -2,7 +2,7 @@ export enum Stage {
   NOT_SET,
   GROUP_THREES,
   GROUP_FIVES,
-  FINALS
+  GROUP_ALL
 }
 
 export enum Language {
